@@ -32,11 +32,11 @@ from datetime import datetime, timezone
 # ── Config ──────────────────────────────────────────────────────────────────
 LICHESS_TV_URL = "https://lichess.org/api/tv/feed"
 
-BRONZE_TABLE = "bronze_tv_feed"        # Raw events — never alter the raw_event column
-SILVER_GAMES = "silver_game_events"    # One row per game (from 'featured' events)
-SILVER_MOVES = "silver_move_events"    # One row per move (from 'fen' events)
+BRONZE_TABLE = "grandmasters.bronze.tv_feed"        # Raw events — never alter the raw_event column
+SILVER_GAMES = "grandmasters.silver.game_events"    # One row per game (from 'featured' events)
+SILVER_MOVES = "grandmasters.silver.move_events"    # One row per move (from 'fen' events)
 
-MAX_EVENTS = 200  # Roughly 1-2 full games (~30 moves each = 60 fen events + featured events)
+MAX_EVENTS = 2  # Roughly 1-2 full games (~30 moves each = 60 fen events + featured events)
 
 # COMMAND ----------
 
@@ -317,3 +317,7 @@ print("Average think time per player:")
 clock_df.groupBy("player").agg(
     spark_round({"time_spent_secs": "avg"}, 2).alias("avg_seconds_per_move"),
 ).show()
+
+# COMMAND ----------
+
+
