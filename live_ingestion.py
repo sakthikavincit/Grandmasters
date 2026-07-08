@@ -1,7 +1,4 @@
 # Databricks notebook source
-
-# COMMAND ----------
-
 # MAGIC %md
 # MAGIC # Chess Intelligence System — Lichess TV Feed Ingestion
 # MAGIC
