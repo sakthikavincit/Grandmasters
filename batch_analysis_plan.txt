@@ -1,0 +1,4 @@
+Player performance and rating progression analysis
+Opening popularity and effectiveness analysis
+Blunder detection using chess engine evaluations (start of the game or mid of the game, end of the game)
+Prediction of blunder probability during long games (due to draining towards to end etc...)

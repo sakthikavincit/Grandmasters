@@ -1,0 +1,2 @@
+Blunder risk prediction during ongoing games
+Fatigue trend analysis based on move progression and game complexity
