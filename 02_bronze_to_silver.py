@@ -9,6 +9,7 @@ BRONZE_TABLE = "bronze.tv_feed"
 SILVER_GAMES = "silver.game_events"
 SILVER_MOVES = "silver.move_events"
 SILVER_PLAYER_METRICS = "silver.player_metrics"
+SILVER_PLAYER_MOVES = "silver.player_moves"
 
 DEVELOPMENT_MODE = True
 
@@ -32,6 +33,7 @@ bronze_df.select("game_id").distinct().show()
 
 # COMMAND ----------
 
+# DBTITLE 1,Extract Game Events
 # ============================================================
 # EXTRACT GAME EVENTS
 #
@@ -49,6 +51,7 @@ featured_schema = StructType([
         StructField("id", StringType()),
         StructField("orientation", StringType()),
         StructField("fen", StringType()),
+        StructField("winner", StringType()),
         StructField("players", ArrayType(
             StructType([
                 StructField("color", StringType()),
@@ -81,6 +84,8 @@ game_events_df = (
         col("json.d.players")[1]["rating"].alias("black_rating"),
 
         col("json.d.players")[0]["seconds"].alias("time_control_seconds"),
+
+        col("json.d.winner").alias("winner"),
 
         col("json.d.fen").alias("starting_fen")
     )
@@ -375,6 +380,35 @@ display(player_moves_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,Write Silver Player Moves
+# ============================================================
+# WRITE SILVER PLAYER MOVES
+# ============================================================
+
+if DEVELOPMENT_MODE:
+    spark.sql(f"DROP TABLE IF EXISTS {SILVER_PLAYER_MOVES}")
+
+(
+    player_moves_df
+    .select(
+        "game_id",
+        "move_seq",
+        "player",
+        "think_time_secs",
+        "clock_loss_secs",
+        "remaining_clock_secs",
+        "ingested_at"
+    )
+    .write
+    .format("delta")
+    .mode("overwrite")
+    .saveAsTable(SILVER_PLAYER_MOVES)
+)
+
+print(f"Successfully wrote {player_moves_df.count()} rows to {SILVER_PLAYER_MOVES}")
+
+# COMMAND ----------
+
 # DBTITLE 1,Cell 16
 # ============================================================
 # PLAYER METRICS
@@ -461,4 +495,31 @@ display(metrics_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,Game Metrics
+from pyspark.sql import functions as F
 
+game_metrics_df = (
+
+    player_moves_df
+
+    .groupBy("game_id")
+
+    .agg(
+
+        F.max("move_seq").alias("total_moves"),
+
+        F.avg("think_time_secs").alias("avg_think_time_secs"),
+
+        F.max("think_time_secs").alias("max_think_time_secs"),
+
+        F.sum("clock_loss_secs").alias("total_clock_loss_secs"),
+
+        F.avg("remaining_clock_secs").alias("avg_remaining_clock_secs"),
+
+        F.max("ingested_at").alias("last_update")
+
+    )
+
+)
+
+display(game_metrics_df)

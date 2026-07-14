@@ -32,11 +32,23 @@ from datetime import datetime, timezone
 # ── Config ──────────────────────────────────────────────────────────────────
 LICHESS_TV_URL = "https://lichess.org/api/tv/feed"
 
-BRONZE_TABLE = "grandmasters.bronze.tv_feed"        # Raw events — never alter the raw_event column
-SILVER_GAMES = "grandmasters.silver.game_events"    # One row per game (from 'featured' events)
-SILVER_MOVES = "grandmasters.silver.move_events"    # One row per move (from 'fen' events)
+BRONZE_TABLE = "bronze.tv_feed"        # Raw events — never alter the raw_event column
+SILVER_GAMES = "silver.game_events"    # One row per game (from 'featured' events)
+SILVER_MOVES = "silver.move_events"    # One row per move (from 'fen' events)
 
-MAX_EVENTS = 2  # Roughly 1-2 full games (~30 moves each = 60 fen events + featured events)
+MAX_EVENTS = 300  # Roughly 1-2 full games (~30 moves each = 60 fen events + featured events)
+MAX_GAMES = 5  # Max number of games to process at once
+
+# COMMAND ----------
+
+# ============================================================
+# DEVELOPMENT ONLY
+# Reset Bronze before ingesting a fresh stream
+# ============================================================
+
+spark.sql("TRUNCATE TABLE bronze.tv_feed")
+
+print("Bronze table cleared.")
 
 # COMMAND ----------
 
@@ -140,6 +152,7 @@ events = read_lichess_tv(LICHESS_TV_URL, MAX_EVENTS)
 
 # COMMAND ----------
 
+# DBTITLE 1,Cell 7
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType
 
 bronze_schema = StructType([
@@ -165,9 +178,87 @@ bronze_df.select("event_type", "game_id", "move_seq", "raw_event").show(5, trunc
     .format("delta")
     .mode("append")
     .option("mergeSchema", "true")
-    .saveAsTable(BRONZE_TABLE))
+    .saveAsTable('bronze.tv_feed'))
 
 print(f"Written {bronze_df.count()} rows to {BRONZE_TABLE}")
+
+# COMMAND ----------
+
+spark.table(BRONZE_TABLE).groupBy("game_id").count().orderBy("count", ascending=False).display()
+
+# COMMAND ----------
+
+# ============================================================
+# SILVER LAYER - GAME EVENTS
+#
+# Purpose:
+# Extract structured game metadata from Bronze.
+# One record represents one featured game.
+# ============================================================
+
+from pyspark.sql.functions import col, get_json_object
+
+game_events_df = (
+    spark.table(BRONZE_TABLE)
+    .filter(col("event_type") == "featured")
+    .select(
+        col("game_id"),
+        col("ingested_at"),
+
+        get_json_object("raw_event", "$.d.players[0].user.name").alias("white_player"),
+        get_json_object("raw_event", "$.d.players[1].user.name").alias("black_player"),
+
+        get_json_object("raw_event", "$.d.players[0].rating").cast("int").alias("white_rating"),
+        get_json_object("raw_event", "$.d.players[1].rating").cast("int").alias("black_rating"),
+
+        get_json_object("raw_event", "$.d.players[0].seconds").cast("int").alias("time_control_seconds"),
+
+        get_json_object("raw_event", "$.d.fen").alias("starting_fen")
+    )
+)
+
+display(game_events_df)
+
+# COMMAND ----------
+
+# ============================================================
+# SILVER DATA QUALITY
+#
+# Purpose:
+# Ensure Silver contains one clean record per game.
+#
+# Rules:
+# 1. Keep only the latest featured event.
+# 2. Remove duplicate games.
+# ============================================================
+
+from pyspark.sql.window import Window
+from pyspark.sql.functions import row_number, desc
+
+latest_game_window = (
+    Window
+    .partitionBy("game_id")
+    .orderBy(desc("ingested_at"))
+)
+
+game_events_df = (
+    game_events_df
+    .withColumn(
+        "rn",
+        row_number().over(latest_game_window)
+    )
+    .filter(col("rn") == 1)
+    .drop("rn")
+)
+
+print("Duplicate Check")
+
+display(
+    game_events_df
+    .groupBy("game_id")
+    .count()
+    .filter("count > 1")
+)
 
 # COMMAND ----------
 
@@ -189,34 +280,43 @@ print(f"Written {bronze_df.count()} rows to {BRONZE_TABLE}")
 
 # COMMAND ----------
 
-from pyspark.sql.functions import col, get_json_object
+# from pyspark.sql.functions import col, get_json_object
 
-game_events_df = (
-    spark.table(BRONZE_TABLE)
-    .filter(col("event_type") == "featured")
-    .select(
-        col("game_id"),
-        col("ingested_at"),
+# game_events_df = (
+#     spark.table(BRONZE_TABLE)
+#     .filter(col("event_type") == "featured")
+#     .select(
+#         col("game_id"),
+#         col("ingested_at"),
 
-        # Player info — note: players[0] = White, players[1] = Black
-        get_json_object("raw_event", "$.d.players[0].user.name").alias("white_player"),
-        get_json_object("raw_event", "$.d.players[1].user.name").alias("black_player"),
-        get_json_object("raw_event", "$.d.players[0].rating").cast("int").alias("white_rating"),
-        get_json_object("raw_event", "$.d.players[1].rating").cast("int").alias("black_rating"),
+#         # Player info — note: players[0] = White, players[1] = Black
+#         get_json_object("raw_event", "$.d.players[0].user.name").alias("white_player"),
+#         get_json_object("raw_event", "$.d.players[1].user.name").alias("black_player"),
+#         get_json_object("raw_event", "$.d.players[0].rating").cast("int").alias("white_rating"),
+#         get_json_object("raw_event", "$.d.players[1].rating").cast("int").alias("black_rating"),
 
-        # time_control_seconds: how many seconds each player starts with
-        # e.g. 300 = 5 minutes (Blitz), 60 = 1 minute (Bullet)
-        get_json_object("raw_event", "$.d.players[0].seconds").cast("int").alias("time_control_seconds"),
+#         # time_control_seconds: how many seconds each player starts with
+#         # e.g. 300 = 5 minutes (Blitz), 60 = 1 minute (Bullet)
+#         get_json_object("raw_event", "$.d.players[0].seconds").cast("int").alias("time_control_seconds"),
 
-        # Starting board position (always standard unless it's a Chess960 game)
-        get_json_object("raw_event", "$.d.fen").alias("starting_fen"),
-    )
-)
+#         # Starting board position (always standard unless it's a Chess960 game)
+#         get_json_object("raw_event", "$.d.fen").alias("starting_fen"),
+#     )
+# )
 
+# print("Silver — Game Events:")
+# game_events_df.show(truncate=False)
+
+# game_events_df.write.format("delta").mode("overwrite").saveAsTable(SILVER_GAMES)
+# print(f"Written to {SILVER_GAMES}")
 print("Silver — Game Events:")
 game_events_df.show(truncate=False)
 
-game_events_df.write.format("delta").mode("overwrite").saveAsTable(SILVER_GAMES)
+game_events_df.write \
+    .format("delta") \
+    .mode("overwrite") \
+    .saveAsTable(SILVER_GAMES)
+
 print(f"Written to {SILVER_GAMES}")
 
 # COMMAND ----------
@@ -242,6 +342,9 @@ print(f"Written to {SILVER_GAMES}")
 
 # COMMAND ----------
 
+# Delete existing table to resolve schema conflict, then write fresh
+# spark.sql(f"DROP TABLE IF EXISTS {SILVER_MOVES}")
+
 move_events_df = (
     spark.table(BRONZE_TABLE)
     .filter(col("event_type") == "fen")
@@ -255,9 +358,9 @@ move_events_df = (
         # last_move in UCI format: from-square + to-square, e.g. "e2e4", "g1f3", "e1g1" (castling)
         get_json_object("raw_event", "$.d.lm").alias("last_move"),
 
-        # Clocks: wc and bc are milliseconds in the API → convert to seconds
-        (get_json_object("raw_event", "$.d.wc").cast("long") / 1000).alias("white_clock_secs"),
-        (get_json_object("raw_event", "$.d.bc").cast("long") / 1000).alias("black_clock_secs"),
+        # Clocks: wc and bc are already in seconds, no division needed
+        get_json_object("raw_event", "$.d.wc").cast("int").alias("white_clock_secs"),
+        get_json_object("raw_event", "$.d.bc").cast("int").alias("black_clock_secs"),
     )
 )
 
@@ -281,7 +384,7 @@ print(f"Written to {SILVER_MOVES}")
 
 # COMMAND ----------
 
-from pyspark.sql.functions import lag, round as spark_round, when
+from pyspark.sql.functions import lag, round as spark_round, when, avg
 from pyspark.sql.window import Window
 
 # Window: per game, ordered by move number
@@ -315,9 +418,311 @@ clock_df.show(30, truncate=False)
 # Summary: average think time per player
 print("Average think time per player:")
 clock_df.groupBy("player").agg(
-    spark_round({"time_spent_secs": "avg"}, 2).alias("avg_seconds_per_move"),
+    spark_round(avg("time_spent_secs"), 2).alias("avg_seconds_per_move"),
 ).show()
 
 # COMMAND ----------
+
+# ============================================================
+# GOLD LAYER - LIVE TOURNAMENT LEADERBOARD
+#
+# Purpose:
+# Create a business-ready Gold table by combining Silver game
+# metadata with live move events and derived analytics.
+#
+# Output:
+# sandbox.gold.live_tournament_leaderboard
+# ============================================================
+
+from pyspark.sql import functions as F
+from pyspark.sql.window import Window
+from pyspark.sql.functions import col, concat_ws
+
+# ============================================================
+# Load Silver Tables
+# ============================================================
+
+games = spark.table(SILVER_GAMES)
+move_df = spark.table(SILVER_MOVES)
+
+# ============================================================
+# Step 1: Get the latest move for every active game
+#
+# Business Purpose:
+# Each game has multiple move events. The dashboard should
+# always display the latest board state, remaining clocks
+# and last move.
+# ============================================================
+
+latest_window = Window.partitionBy("game_id").orderBy(F.desc("move_seq"))
+
+latest_move = (
+    move_df
+    .withColumn("rn", F.row_number().over(latest_window))
+    .filter(col("rn") == 1)
+    .select(
+        "game_id",
+        col("move_seq").alias("move_count"),
+        "last_move",
+        col("white_clock_secs").alias("white_remaining_clock_secs"),
+        col("black_clock_secs").alias("black_remaining_clock_secs"),
+        "ingested_at"
+    )
+)
+
+# ============================================================
+# Step 2: Calculate average think time
+#
+# Business Purpose:
+# Estimate the average time spent by each player per move.
+# This metric will later be useful for decision quality and
+# fatigue analysis.
+# ============================================================
+
+avg_think = (
+    clock_df
+    .groupBy("game_id", "player")
+    .agg(
+        F.round(
+            F.avg("time_spent_secs"),
+            2
+        ).alias("avg_think_secs")
+    )
+)
+
+avg_think_pivot = (
+    avg_think
+    .groupBy("game_id")
+    .pivot("player", ["White", "Black"])
+    .agg(F.first("avg_think_secs"))
+    .withColumnRenamed("White", "white_avg_think_secs")
+    .withColumnRenamed("Black", "black_avg_think_secs")
+)
+
+# ============================================================
+# Step 3: Join Game Metadata + Latest Move + Think Time
+# ============================================================
+
+leaderboard = (
+    games.alias("g")
+    .join(latest_move.alias("m"), "game_id")
+    .join(avg_think_pivot.alias("a"), "game_id", "left")
+)
+
+# ============================================================
+# Step 4: Calculate Game Duration
+#
+# Business Purpose:
+# Time elapsed between game creation and latest received move.
+# ============================================================
+
+leaderboard = leaderboard.withColumn(
+    "game_duration_secs",
+    F.unix_timestamp(F.expr("try_to_timestamp(m.ingested_at)"))
+    - F.unix_timestamp(F.expr("try_to_timestamp(g.ingested_at)"))
+)
+
+# ============================================================
+# Step 5: Compute Win Probability (Rule-Based MVP)
+#
+# Current Implementation:
+# - Rating Difference
+# - Remaining Clock Difference
+#
+# Future Enhancement:
+# Replace with ML model trained using historical games and
+# Stockfish evaluations.
+# ============================================================
+
+leaderboard = (
+    leaderboard
+    .withColumn(
+        "rating_difference",
+        F.abs(col("white_rating") - col("black_rating"))
+    )
+    .withColumn(
+        "rating_diff",
+        col("white_rating") - col("black_rating")
+    )
+    .withColumn(
+        "clock_diff",
+        col("white_remaining_clock_secs")
+        - col("black_remaining_clock_secs")
+    )
+)
+
+leaderboard = leaderboard.withColumn(
+    "white_score",
+    F.lit(50)
+    + (col("rating_diff") * 0.05)
+    + (col("clock_diff") * 0.20)
+)
+
+leaderboard = (
+    leaderboard
+    .withColumn(
+        "white_win_probability",
+        F.when(col("white_score") < 0, 0)
+         .when(col("white_score") > 100, 100)
+         .otherwise(F.round(col("white_score"), 1))
+    )
+    .withColumn(
+        "black_win_probability",
+        100 - col("white_win_probability")
+    )
+)
+
+# ============================================================
+# Step 6: Additional Dashboard Columns
+# ============================================================
+
+leaderboard = (
+    leaderboard
+    .withColumn("game_status", F.lit("In Progress"))
+    .withColumn(
+        "match_name",
+        concat_ws(
+            " vs ",
+            col("white_player"),
+            col("black_player")
+        )
+    )
+)
+
+# ============================================================
+# Step 7: Final Gold Dataset
+#
+# This dataset powers the Live Tournament Dashboard.
+# ============================================================
+
+gold_live_leaderboard = (
+    leaderboard.select(
+        "game_id",
+        "match_name",
+        "white_player",
+        "black_player",
+        "white_rating",
+        "black_rating",
+        "rating_difference",
+        "white_remaining_clock_secs",
+        "black_remaining_clock_secs",
+        "white_avg_think_secs",
+        "black_avg_think_secs",
+        "last_move",
+        "move_count",
+        "game_duration_secs",
+        "white_win_probability",
+        "black_win_probability",
+        "game_status"
+    )
+    .fillna({
+        "white_avg_think_secs": 0,
+        "black_avg_think_secs": 0
+    })
+)
+
+# ============================================================
+# Step 8: Save Gold Table
+# ============================================================
+
+spark.sql("CREATE SCHEMA IF NOT EXISTS sandbox.gold")
+
+(
+    gold_live_leaderboard.write
+    .format("delta")
+    .mode("overwrite")
+    .option("mergeSchema", "true")
+    .saveAsTable("sandbox.gold.live_tournament_leaderboard")
+)
+
+print("Gold table written successfully:")
+print("sandbox.gold.live_tournament_leaderboard")
+
+display(gold_live_leaderboard)
+
+# COMMAND ----------
+
+# ============================================================
+# DASHBOARD TILE 2 - LIVE GAMES KPI
+#
+# Purpose:
+# Displays the total number of active live games currently
+# being tracked from the Lichess stream.
+# ============================================================
+
+live_games_df = (
+    gold_live_leaderboard
+    .selectExpr("count(*) as Live_Games")
+)
+
+display(live_games_df)
+
+# COMMAND ----------
+
+# ============================================================
+# DASHBOARD TILE 3 - LOWEST REMAINING CLOCK
+#
+# Purpose:
+# Displays the lowest remaining clock among all active players.
+# Useful to identify games that are entering time pressure.
+# ============================================================
+
+from pyspark.sql.functions import least, min
+
+lowest_clock_df = (
+    gold_live_leaderboard
+    .select(
+        least(
+            "white_remaining_clock_secs",
+            "black_remaining_clock_secs"
+        ).alias("Lowest Remaining Clock (sec)")
+    )
+    .agg(
+        min("Lowest Remaining Clock (sec)")
+        .alias("Lowest Remaining Clock (sec)")
+    )
+)
+
+display(lowest_clock_df)
+
+# COMMAND ----------
+
+gold_live_leaderboard.groupBy("game_id").count().display()
+
+# COMMAND ----------
+
+# ============================================================
+# DASHBOARD TILE 4 - REMAINING CLOCK COMPARISON
+#
+# Purpose:
+# Compare the remaining clock of White and Black players
+# for every live game.
+# ============================================================
+
+from pyspark.sql.functions import col, lit
+
+white_clock_df = (
+    gold_live_leaderboard
+    .select(
+        "match_name",
+        col("white_player").alias("player"),
+        col("white_remaining_clock_secs").alias("remaining_clock_secs")
+    )
+    .withColumn("color", lit("White"))
+)
+
+black_clock_df = (
+    gold_live_leaderboard
+    .select(
+        "match_name",
+        col("black_player").alias("player"),
+        col("black_remaining_clock_secs").alias("remaining_clock_secs")
+    )
+    .withColumn("color", lit("Black"))
+)
+
+clock_comparison_df = white_clock_df.unionByName(black_clock_df)
+
+display(clock_comparison_df)
 
 
