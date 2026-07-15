@@ -4,12 +4,12 @@
 # SILVER LAYER CONFIGURATION
 # ============================================================
 
-BRONZE_TABLE = "bronze.tv_feed"
+BRONZE_TABLE = "grandmasters.bronze.live_feed"
 
-SILVER_GAMES = "silver.game_events"
-SILVER_MOVES = "silver.move_events"
-SILVER_PLAYER_METRICS = "silver.player_metrics"
-SILVER_PLAYER_MOVES = "silver.player_moves"
+SILVER_GAMES = "grandmasters.silver.game_events"
+SILVER_MOVES = "grandmasters.silver.game_move_events"
+SILVER_PLAYER_METRICS = "grandmasters.silver.player_metrics"
+SILVER_PLAYER_MOVES = "grandmasters.silver.player_moves"
 
 DEVELOPMENT_MODE = True
 
@@ -160,17 +160,20 @@ game_events_df = (
 
 # COMMAND ----------
 
+# DBTITLE 1,Cell 8
 # ============================================================
 # WRITE SILVER GAME EVENTS
 # ============================================================
 
-spark.sql("CREATE SCHEMA IF NOT EXISTS silver")
+spark.sql("CREATE CATALOG IF NOT EXISTS grandmasters")
+spark.sql("CREATE SCHEMA IF NOT EXISTS grandmasters.silver")
 
 (
     game_events_df
     .write
     .format("delta")
     .mode("overwrite")
+    .option("overwriteSchema", "true")
     .saveAsTable(SILVER_GAMES)
 )
 
@@ -272,11 +275,12 @@ display(
 
 # COMMAND ----------
 
+# DBTITLE 1,Cell 13
 # ============================================================
 # WRITE SILVER MOVE EVENTS
 # ============================================================
 
-spark.sql("CREATE SCHEMA IF NOT EXISTS silver")
+spark.sql("CREATE SCHEMA IF NOT EXISTS grandmasters.silver")
 
 if DEVELOPMENT_MODE:
     spark.sql(f"DROP TABLE IF EXISTS {SILVER_MOVES}")

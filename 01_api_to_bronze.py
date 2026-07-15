@@ -1,14 +1,19 @@
 # Databricks notebook source
+# DBTITLE 1,Cell 1
 # ============================================================
 # CHESS LIVE ANALYTICS PROJECT
 # BRONZE LAYER CONFIGURATION
 # ============================================================
 
+# Create the grandmasters catalog and bronze schema if they do not exist
+spark.sql("CREATE CATALOG IF NOT EXISTS grandmasters")
+spark.sql("CREATE DATABASE IF NOT EXISTS grandmasters.bronze")
+
 # Lichess TV Streaming API
 LICHESS_TV_URL = "https://lichess.org/api/tv/feed"
 
 # Delta Tables
-BRONZE_TABLE = "bronze.tv_feed"
+BRONZE_TABLE = "grandmasters.bronze.live_feed"
 
 # Number of streaming events to capture
 MAX_EVENTS = 300
