@@ -1,0 +1,5407 @@
+{
+  "datasets": [
+    {
+      "name": "live_games",
+      "displayName": "Live Games",
+      "queryLines": [
+        "SELECT\n",
+        "  COUNT(*) AS Live_Games\n",
+        "FROM\n",
+        "  grandmasters.gold.live_game_dashboard"
+      ]
+    },
+    {
+      "name": "active_players",
+      "displayName": "Active Players",
+      "queryLines": [
+        "SELECT\n",
+        "  COUNT(DISTINCT player) AS Active_Players\n",
+        "FROM\n",
+        "  (\n",
+        "    SELECT\n",
+        "      white_player AS player\n",
+        "    FROM\n",
+        "      grandmasters.gold.live_game_dashboard\n",
+        "    UNION\n",
+        "    SELECT\n",
+        "      black_player AS player\n",
+        "    FROM\n",
+        "      grandmasters.gold.live_game_dashboard\n",
+        "  )"
+      ]
+    },
+    {
+      "name": "avg_rating",
+      "displayName": "Average Player Rating",
+      "queryLines": [
+        "SELECT\n",
+        "  AVG(rating) AS Avg_Rating\n",
+        "FROM\n",
+        "  (\n",
+        "    SELECT\n",
+        "      white_rating AS rating\n",
+        "    FROM\n",
+        "      grandmasters.gold.live_game_dashboard\n",
+        "    UNION ALL\n",
+        "    SELECT\n",
+        "      black_rating AS rating\n",
+        "    FROM\n",
+        "      grandmasters.gold.live_game_dashboard\n",
+        "  )"
+      ]
+    },
+    {
+      "name": "avg_think_time",
+      "displayName": "Average Think Time",
+      "queryLines": [
+        "SELECT\n",
+        "  AVG(avg_think_time_secs) AS Avg_Think_Time\n",
+        "FROM\n",
+        "  grandmasters.gold.live_game_dashboard"
+      ]
+    },
+    {
+      "name": "avg_remaining_clock",
+      "displayName": "Average Remaining Clock",
+      "queryLines": [
+        "SELECT\n",
+        "  AVG(avg_remaining_clock_secs) AS Avg_Remaining_Clock\n",
+        "FROM\n",
+        "  grandmasters.gold.live_game_dashboard"
+      ]
+    },
+    {
+      "name": "avg_rating_diff",
+      "displayName": "Average Rating Difference",
+      "queryLines": [
+        "SELECT\n",
+        "  AVG(rating_difference) AS Avg_Rating_Diff\n",
+        "FROM\n",
+        "  grandmasters.gold.live_game_dashboard"
+      ]
+    },
+    {
+      "name": "avg_game_duration",
+      "displayName": "Average Game Duration",
+      "queryLines": [
+        "SELECT\n",
+        "  AVG(time_control_seconds) AS Avg_Duration\n",
+        "FROM\n",
+        "  grandmasters.gold.live_game_dashboard"
+      ]
+    },
+    {
+      "name": "avg_moves",
+      "displayName": "Average Total Moves",
+      "queryLines": [
+        "SELECT\n",
+        "  AVG(total_moves) AS Avg_Moves\n",
+        "FROM\n",
+        "  grandmasters.gold.live_game_dashboard"
+      ]
+    },
+    {
+      "name": "think_time_per_player",
+      "displayName": "Think Time per Player",
+      "queryLines": [
+        "SELECT\n",
+        "  player,\n",
+        "  AVG(avg_think_time_secs) AS Avg_Think_Time\n",
+        "FROM\n",
+        "  (\n",
+        "    SELECT\n",
+        "      white_player AS player,\n",
+        "      avg_think_time_secs\n",
+        "    FROM\n",
+        "      grandmasters.gold.live_game_dashboard\n",
+        "    UNION ALL\n",
+        "    SELECT\n",
+        "      black_player AS player,\n",
+        "      avg_think_time_secs\n",
+        "    FROM\n",
+        "      grandmasters.gold.live_game_dashboard\n",
+        "  )\n",
+        "GROUP BY\n",
+        "  player"
+      ]
+    },
+    {
+      "name": "rating_comparison",
+      "displayName": "Rating Comparison",
+      "queryLines": [
+        "SELECT\n",
+        "  game_id,\n",
+        "  'White' AS side,\n",
+        "  white_player AS player,\n",
+        "  white_rating AS rating\n",
+        "FROM\n",
+        "  grandmasters.gold.live_game_dashboard\n",
+        "UNION ALL\n",
+        "SELECT\n",
+        "  game_id,\n",
+        "  'Black' AS side,\n",
+        "  black_player AS player,\n",
+        "  black_rating AS rating\n",
+        "FROM\n",
+        "  grandmasters.gold.live_game_dashboard"
+      ]
+    },
+    {
+      "name": "live_games_detail",
+      "displayName": "Live Games Detail",
+      "queryLines": [
+        "SELECT\n",
+        "  game_id,\n",
+        "  player_vs_player,\n",
+        "  white_rating,\n",
+        "  black_rating,\n",
+        "  total_moves,\n",
+        "  current_move_number,\n",
+        "  ROUND(avg_think_time_secs, 2) AS avg_think_time_secs,\n",
+        "  last_move,\n",
+        "  rating_difference,\n",
+        "  avg_remaining_clock_secs\n",
+        "FROM\n",
+        "  grandmasters.gold.live_game_dashboard"
+      ]
+    },
+    {
+      "name": "clock_pressure",
+      "displayName": "Clock Pressure by Player",
+      "queryLines": [
+        "SELECT\n",
+        "  player,\n",
+        "  AVG(avg_remaining_clock_secs) AS Avg_Remaining_Clock\n",
+        "FROM\n",
+        "  (\n",
+        "    SELECT\n",
+        "      white_player AS player,\n",
+        "      avg_remaining_clock_secs\n",
+        "    FROM\n",
+        "      grandmasters.gold.live_game_dashboard\n",
+        "    UNION ALL\n",
+        "    SELECT\n",
+        "      black_player AS player,\n",
+        "      avg_remaining_clock_secs\n",
+        "    FROM\n",
+        "      grandmasters.gold.live_game_dashboard\n",
+        "  )\n",
+        "GROUP BY\n",
+        "  player"
+      ]
+    },
+    {
+      "name": "top_live_match",
+      "displayName": "Top Live Match",
+      "queryLines": [
+        "SELECT\n",
+        "  white_player,\n",
+        "  black_player,\n",
+        "  white_rating,\n",
+        "  black_rating,\n",
+        "  rating_difference AS rating_gap,\n",
+        "  total_moves AS move_count,\n",
+        "  ROUND(avg_think_time_secs, 1) AS avg_think_time\n",
+        "FROM\n",
+        "  grandmasters.gold.live_game_dashboard\n",
+        "ORDER BY\n",
+        "  total_moves DESC\n",
+        "LIMIT 1"
+      ]
+    },
+    {
+      "name": "game_progress",
+      "displayName": "Game Progress",
+      "queryLines": [
+        "SELECT\n",
+        "  g.player_vs_player,\n",
+        "  m.move_seq,\n",
+        "  m.remaining_clock_secs,\n",
+        "  m.player\n",
+        "FROM\n",
+        "  grandmasters.silver.player_moves m\n",
+        "    JOIN grandmasters.gold.live_game_dashboard g\n",
+        "      ON m.game_id = g.game_id\n",
+        "ORDER BY\n",
+        "  m.move_seq"
+      ]
+    },
+    {
+      "name": "player_retention_ds",
+      "displayName": "Player Retention - Weekly Rating Changes",
+      "queryLines": [
+        "WITH player_games AS (\n",
+        "  SELECT\n",
+        "    white_player AS player,\n",
+        "    ingested_at,\n",
+        "    white_rating AS rating\n",
+        "  FROM\n",
+        "    grandmasters.silver.game_events\n",
+        "  UNION ALL\n",
+        "  SELECT\n",
+        "    black_player,\n",
+        "    ingested_at,\n",
+        "    black_rating\n",
+        "  FROM\n",
+        "    grandmasters.silver.game_events\n",
+        "),\n",
+        "weekly_avg AS (\n",
+        "  SELECT\n",
+        "    player,\n",
+        "    DATE_TRUNC('week', ingested_at) AS week_start,\n",
+        "    ROUND(AVG(rating), 0) AS avg_rating,\n",
+        "    COUNT(*) AS games_played\n",
+        "  FROM\n",
+        "    player_games\n",
+        "  GROUP BY\n",
+        "    player,\n",
+        "    DATE_TRUNC('week', ingested_at)\n",
+        "),\n",
+        "with_prev AS (\n",
+        "  SELECT\n",
+        "    player,\n",
+        "    week_start,\n",
+        "    avg_rating,\n",
+        "    games_played,\n",
+        "    LAG(avg_rating) OVER (PARTITION BY player ORDER BY week_start) AS prev_week_rating\n",
+        "  FROM\n",
+        "    weekly_avg\n",
+        ")\n",
+        "SELECT\n",
+        "  player,\n",
+        "  week_start,\n",
+        "  avg_rating,\n",
+        "  games_played,\n",
+        "  ROUND(avg_rating - prev_week_rating, 0) AS rating_change_7d\n",
+        "FROM\n",
+        "  with_prev\n",
+        "ORDER BY\n",
+        "  week_start,\n",
+        "  player"
+      ]
+    },
+    {
+      "name": "game_type_trends_ds",
+      "displayName": "Game Type Trends - QoQ Volume",
+      "queryLines": [
+        "WITH game_type_quarter AS (\n",
+        "  SELECT\n",
+        "    CASE\n",
+        "      WHEN time_control_seconds <= 180 THEN 'Bullet'\n",
+        "      WHEN time_control_seconds <= 600 THEN 'Blitz'\n",
+        "      WHEN time_control_seconds <= 1800 THEN 'Rapid'\n",
+        "      ELSE 'Classical'\n",
+        "    END AS game_type,\n",
+        "    DATE_TRUNC('quarter', ingested_at) AS quarter,\n",
+        "    COUNT(*) AS games_count\n",
+        "  FROM\n",
+        "    grandmasters.silver.game_events\n",
+        "  GROUP BY\n",
+        "    1,\n",
+        "    2\n",
+        "),\n",
+        "with_prev AS (\n",
+        "  SELECT\n",
+        "    game_type,\n",
+        "    quarter,\n",
+        "    games_count,\n",
+        "    LAG(games_count) OVER (PARTITION BY game_type ORDER BY quarter) AS prev_quarter_count\n",
+        "  FROM\n",
+        "    game_type_quarter\n",
+        ")\n",
+        "SELECT\n",
+        "  game_type,\n",
+        "  quarter,\n",
+        "  games_count,\n",
+        "  ROUND(\n",
+        "    100.0 * (games_count - prev_quarter_count) / NULLIF(prev_quarter_count, 0),\n",
+        "    1\n",
+        "  ) AS qoq_growth_pct\n",
+        "FROM\n",
+        "  with_prev\n",
+        "ORDER BY\n",
+        "  quarter,\n",
+        "  game_type"
+      ]
+    },
+    {
+      "name": "matchmaking_health_ds",
+      "displayName": "Matchmaking Health - Elo Gap by Game Type",
+      "queryLines": [
+        "SELECT\n",
+        "  CASE\n",
+        "    WHEN time_control_seconds <= 180 THEN 'Bullet'\n",
+        "    WHEN time_control_seconds <= 600 THEN 'Blitz'\n",
+        "    WHEN time_control_seconds <= 1800 THEN 'Rapid'\n",
+        "    ELSE 'Classical'\n",
+        "  END AS game_type,\n",
+        "  COUNT(*) AS total_games,\n",
+        "  ROUND(AVG(ABS(white_rating - black_rating)), 1) AS avg_elo_gap,\n",
+        "  ROUND(STDDEV(ABS(white_rating - black_rating)), 1) AS stddev_elo_gap,\n",
+        "  MIN(ABS(white_rating - black_rating)) AS min_elo_gap,\n",
+        "  MAX(ABS(white_rating - black_rating)) AS max_elo_gap\n",
+        "FROM\n",
+        "  grandmasters.silver.game_events\n",
+        "GROUP BY\n",
+        "  1\n",
+        "ORDER BY\n",
+        "  avg_elo_gap"
+      ]
+    },
+    {
+      "name": "upset_rate_ds",
+      "displayName": "Upset Rate - Lower Rated Player Wins",
+      "queryLines": [
+        "SELECT\n",
+        "  CASE\n",
+        "    WHEN LEAST(white_rating, black_rating) < 1200 THEN '0-1199 Beginner'\n",
+        "    WHEN LEAST(white_rating, black_rating) < 1600 THEN '1200-1599 Intermediate'\n",
+        "    WHEN LEAST(white_rating, black_rating) < 2000 THEN '1600-1999 Advanced'\n",
+        "    WHEN LEAST(white_rating, black_rating) < 2400 THEN '2000-2399 Expert'\n",
+        "    ELSE '2400+ Master'\n",
+        "  END AS elo_bracket,\n",
+        "  COUNT(*) AS total_decided_games,\n",
+        "  SUM(\n",
+        "    CASE\n",
+        "      WHEN\n",
+        "        winner = 'white'\n",
+        "        AND white_rating < black_rating\n",
+        "      THEN\n",
+        "        1\n",
+        "      WHEN\n",
+        "        winner = 'black'\n",
+        "        AND black_rating < white_rating\n",
+        "      THEN\n",
+        "        1\n",
+        "      ELSE 0\n",
+        "    END\n",
+        "  ) AS upset_wins,\n",
+        "  ROUND(\n",
+        "    100.0\n",
+        "      * SUM(\n",
+        "        CASE\n",
+        "          WHEN\n",
+        "            winner = 'white'\n",
+        "            AND white_rating < black_rating\n",
+        "          THEN\n",
+        "            1\n",
+        "          WHEN\n",
+        "            winner = 'black'\n",
+        "            AND black_rating < white_rating\n",
+        "          THEN\n",
+        "            1\n",
+        "          ELSE 0\n",
+        "        END\n",
+        "      )\n",
+        "      / NULLIF(COUNT(*), 0),\n",
+        "    1\n",
+        "  ) AS upset_pct\n",
+        "FROM\n",
+        "  grandmasters.silver.game_events\n",
+        "WHERE\n",
+        "  winner IN ('white', 'black')\n",
+        "GROUP BY\n",
+        "  1\n",
+        "ORDER BY\n",
+        "  MIN(LEAST(white_rating, black_rating))"
+      ]
+    },
+    {
+      "name": "engagement_timezones_ds",
+      "displayName": "Engagement Timezones - Hourly Elo Activity",
+      "queryLines": [
+        "SELECT\n",
+        "  HOUR(ingested_at) AS hour_of_day,\n",
+        "  CASE\n",
+        "    WHEN (white_rating + black_rating) / 2 < 1200 THEN 'Beginner (<1200)'\n",
+        "    WHEN (white_rating + black_rating) / 2 < 1600 THEN 'Intermediate (1200-1599)'\n",
+        "    WHEN (white_rating + black_rating) / 2 < 2000 THEN 'Advanced (1600-1999)'\n",
+        "    ELSE 'Expert (2000+)'\n",
+        "  END AS elo_tier,\n",
+        "  COUNT(*) AS games_count,\n",
+        "  ROUND(AVG((white_rating + black_rating) / 2.0), 0) AS avg_elo\n",
+        "FROM\n",
+        "  grandmasters.silver.game_events\n",
+        "GROUP BY\n",
+        "  1,\n",
+        "  2\n",
+        "ORDER BY\n",
+        "  1,\n",
+        "  2"
+      ]
+    },
+    {
+      "name": "game_speed_load_ds",
+      "displayName": "Game Speed & Server Load",
+      "queryLines": [
+        "SELECT\n",
+        "  CASE\n",
+        "    WHEN time_control_seconds <= 60 THEN 'UltraBullet'\n",
+        "    WHEN time_control_seconds <= 180 THEN 'Bullet'\n",
+        "    WHEN time_control_seconds <= 600 THEN 'Blitz'\n",
+        "    WHEN time_control_seconds <= 1800 THEN 'Rapid'\n",
+        "    ELSE 'Classical'\n",
+        "  END AS time_control_bucket,\n",
+        "  COUNT(*) AS total_games,\n",
+        "  ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 1) AS pct_of_total,\n",
+        "  ROUND(AVG(time_control_seconds), 0) AS avg_time_control_secs\n",
+        "FROM\n",
+        "  grandmasters.silver.game_events\n",
+        "GROUP BY\n",
+        "  1\n",
+        "ORDER BY\n",
+        "  total_games DESC"
+      ]
+    },
+    {
+      "name": "gold_player_retention",
+      "displayName": "Gold - Player Retention",
+      "queryLines": [
+        "SELECT\n",
+        "  *\n",
+        "FROM\n",
+        "  grandmasters.gold.player_retention_analysis"
+      ]
+    },
+    {
+      "name": "gold_opening_trends",
+      "displayName": "Gold - Opening Trends",
+      "queryLines": [
+        "SELECT\n",
+        "  *\n",
+        "FROM\n",
+        "  grandmasters.gold.opening_meta_trends"
+      ]
+    },
+    {
+      "name": "gold_game_speed",
+      "displayName": "Gold - Game Speed",
+      "queryLines": [
+        "SELECT\n",
+        "  *\n",
+        "FROM\n",
+        "  grandmasters.gold.game_speed_server_load"
+      ]
+    },
+    {
+      "name": "gold_upset_rate",
+      "displayName": "Gold - Upset Rate",
+      "queryLines": [
+        "SELECT\n",
+        "  *\n",
+        "FROM\n",
+        "  grandmasters.gold.upset_rate_benchmark"
+      ]
+    },
+    {
+      "name": "gold_matchmaking_health",
+      "displayName": "Gold - Matchmaking Health",
+      "queryLines": [
+        "SELECT\n",
+        "  *\n",
+        "FROM\n",
+        "  grandmasters.gold.matchmaking_health_index"
+      ]
+    },
+    {
+      "name": "gold_engagement_tz",
+      "displayName": "Gold - Engagement Timezones",
+      "queryLines": [
+        "SELECT\n",
+        "  *\n",
+        "FROM\n",
+        "  grandmasters.gold.engagement_target_timezones"
+      ]
+    },
+    {
+      "name": "player_detail",
+      "displayName": "Player Detail",
+      "queryLines": [
+        "SELECT\n",
+        "  player_id,\n",
+        "  utc_date,\n",
+        "  player_tier,\n",
+        "  daily_rating_change,\n",
+        "  games_played,\n",
+        "  peak_rating,\n",
+        "  rolling_7game_rating_change,\n",
+        "  days_until_next_game,\n",
+        "  churn_risk\n",
+        "FROM\n",
+        "  grandmasters.gold.player_retention_analysis\n",
+        "ORDER BY\n",
+        "  player_id,\n",
+        "  utc_date"
+      ]
+    },
+    {
+      "name": "rating_prediction",
+      "displayName": "Rating Milestone Prediction",
+      "queryLines": [
+        "WITH player_stats AS (\n",
+        "  SELECT\n",
+        "    player_id,\n",
+        "    player_tier,\n",
+        "    MAX(peak_rating) AS current_rating,\n",
+        "    SUM(daily_rating_change) AS total_rating_gained,\n",
+        "    COUNT(DISTINCT utc_date) AS active_days,\n",
+        "    DATEDIFF(MAX(utc_date), MIN(utc_date)) AS days_span,\n",
+        "    -- Next 100-point milestone\n",
+        "    CEIL(MAX(peak_rating) / 100.0)\n",
+        "      * 100 AS next_milestone\n",
+        "  FROM\n",
+        "    grandmasters.gold.player_retention_analysis\n",
+        "  WHERE\n",
+        "    daily_rating_change IS NOT NULL\n",
+        "  GROUP BY\n",
+        "    player_id,\n",
+        "    player_tier\n",
+        "  HAVING\n",
+        "    COUNT(DISTINCT utc_date) >= 2\n",
+        "    AND DATEDIFF(MAX(utc_date), MIN(utc_date)) > 0\n",
+        ")\n",
+        "SELECT\n",
+        "  player_id,\n",
+        "  player_tier,\n",
+        "  current_rating,\n",
+        "  CAST(next_milestone AS INT) AS next_milestone,\n",
+        "  CAST(next_milestone - current_rating AS INT) AS points_needed,\n",
+        "  active_days,\n",
+        "  days_span,\n",
+        "  ROUND(total_rating_gained * 1.0 / days_span, 3) AS avg_gain_per_day,\n",
+        "  CASE\n",
+        "    WHEN total_rating_gained / days_span <= 0 THEN 'Declining'\n",
+        "    ELSE\n",
+        "      CAST(\n",
+        "        ROUND((next_milestone - current_rating) / (total_rating_gained * 1.0 / days_span), 0) AS INT\n",
+        "      )\n",
+        "  END AS predicted_days_to_milestone,\n",
+        "  CASE\n",
+        "    WHEN total_rating_gained / days_span <= 0 THEN 'Needs improvement'\n",
+        "    WHEN\n",
+        "      (next_milestone - current_rating) / (total_rating_gained * 1.0 / days_span) <= 30\n",
+        "    THEN\n",
+        "      'Very close!'\n",
+        "    WHEN\n",
+        "      (next_milestone - current_rating) / (total_rating_gained * 1.0 / days_span) <= 90\n",
+        "    THEN\n",
+        "      'On track'\n",
+        "    ELSE 'Long road ahead'\n",
+        "  END AS outlook\n",
+        "FROM\n",
+        "  player_stats\n",
+        "WHERE\n",
+        "  next_milestone - current_rating > 0\n",
+        "ORDER BY\n",
+        "  current_rating DESC"
+      ]
+    },
+    {
+      "name": "blunder_analysis",
+      "displayName": "Blunder & Loss Analysis",
+      "queryLines": [
+        "WITH player_games AS (\n",
+        "  -- White player losses\n",
+        "  SELECT\n",
+        "    white_player AS player_id,\n",
+        "    white_elo AS rating,\n",
+        "    white_rating_diff AS rating_change,\n",
+        "    opening,\n",
+        "    eco,\n",
+        "    speed,\n",
+        "    utc_hour,\n",
+        "    utc_date,\n",
+        "    'white' AS color,\n",
+        "    CASE\n",
+        "      WHEN result = 'black' THEN 'loss'\n",
+        "      WHEN result = 'white' THEN 'win'\n",
+        "      ELSE 'draw'\n",
+        "    END AS outcome\n",
+        "  FROM\n",
+        "    grandmasters.silver.historic_games\n",
+        "  WHERE\n",
+        "    white_player IS NOT NULL\n",
+        "    AND white_rating_diff IS NOT NULL\n",
+        "  UNION ALL\n",
+        "  -- Black player losses\n",
+        "  SELECT\n",
+        "    black_player AS player_id,\n",
+        "    black_elo AS rating,\n",
+        "    black_rating_diff AS rating_change,\n",
+        "    opening,\n",
+        "    eco,\n",
+        "    speed,\n",
+        "    utc_hour,\n",
+        "    utc_date,\n",
+        "    'black' AS color,\n",
+        "    CASE\n",
+        "      WHEN result = 'white' THEN 'loss'\n",
+        "      WHEN result = 'black' THEN 'win'\n",
+        "      ELSE 'draw'\n",
+        "    END AS outcome\n",
+        "  FROM\n",
+        "    grandmasters.silver.historic_games\n",
+        "  WHERE\n",
+        "    black_player IS NOT NULL\n",
+        "    AND black_rating_diff IS NOT NULL\n",
+        ")\n",
+        "SELECT\n",
+        "  player_id,\n",
+        "  rating,\n",
+        "  rating_change,\n",
+        "  opening,\n",
+        "  eco,\n",
+        "  speed,\n",
+        "  utc_hour,\n",
+        "  outcome,\n",
+        "  -- Categorize blunder severity\n",
+        "  CASE\n",
+        "    WHEN rating_change <= -15 THEN 'Heavy Loss (>15pts)'\n",
+        "    WHEN rating_change <= -8 THEN 'Moderate Loss (8-15pts)'\n",
+        "    WHEN rating_change < 0 THEN 'Minor Loss (<8pts)'\n",
+        "    ELSE 'Win/Draw'\n",
+        "  END AS loss_severity\n",
+        "FROM\n",
+        "  player_games\n",
+        "ORDER BY\n",
+        "  player_id,\n",
+        "  utc_date"
+      ]
+    },
+    {
+      "name": "fatigue_analysis",
+      "displayName": "Fatigue & Tilt Analysis",
+      "queryLines": [
+        "WITH player_games AS (\n",
+        "  SELECT\n",
+        "    white_player AS player_id,\n",
+        "    white_elo AS rating,\n",
+        "    white_rating_diff AS rating_change,\n",
+        "    speed,\n",
+        "    utc_date,\n",
+        "    utc_hour,\n",
+        "    utc_time,\n",
+        "    opening,\n",
+        "    eco,\n",
+        "    status,\n",
+        "    CASE\n",
+        "      WHEN result = 'black' THEN 1\n",
+        "      ELSE 0\n",
+        "    END AS is_loss\n",
+        "  FROM\n",
+        "    grandmasters.silver.historic_games\n",
+        "  WHERE\n",
+        "    white_player IS NOT NULL\n",
+        "    AND white_rating_diff IS NOT NULL\n",
+        "  UNION ALL\n",
+        "  SELECT\n",
+        "    black_player,\n",
+        "    black_elo,\n",
+        "    black_rating_diff,\n",
+        "    speed,\n",
+        "    utc_date,\n",
+        "    utc_hour,\n",
+        "    utc_time,\n",
+        "    opening,\n",
+        "    eco,\n",
+        "    status,\n",
+        "    CASE\n",
+        "      WHEN result = 'white' THEN 1\n",
+        "      ELSE 0\n",
+        "    END AS is_loss\n",
+        "  FROM\n",
+        "    grandmasters.silver.historic_games\n",
+        "  WHERE\n",
+        "    black_player IS NOT NULL\n",
+        "    AND black_rating_diff IS NOT NULL\n",
+        "),\n",
+        "with_sequence AS (\n",
+        "  SELECT\n",
+        "    *,\n",
+        "    -- Per-day session number\n",
+        "    ROW_NUMBER() OVER (PARTITION BY player_id, utc_date ORDER BY utc_time) AS game_in_session,\n",
+        "    COUNT(*) OVER (PARTITION BY player_id, utc_date) AS session_length,\n",
+        "    -- Overall game sequence per player (for individual player view)\n",
+        "    ROW_NUMBER() OVER (PARTITION BY player_id ORDER BY utc_date, utc_time) AS career_game_number,\n",
+        "    COUNT(*) OVER (PARTITION BY player_id) AS total_games_played,\n",
+        "    -- Cumulative rating change\n",
+        "    SUM(rating_change) OVER (\n",
+        "        PARTITION BY player_id\n",
+        "        ORDER BY utc_date, utc_time\n",
+        "        ROWS UNBOUNDED PRECEDING\n",
+        "      ) AS cumulative_rating_change,\n",
+        "    -- Rolling 5-game avg\n",
+        "    AVG(rating_change) OVER (\n",
+        "        PARTITION BY player_id\n",
+        "        ORDER BY utc_date, utc_time\n",
+        "        ROWS BETWEEN 4 PRECEDING AND CURRENT ROW\n",
+        "      ) AS rolling_5game_avg\n",
+        "  FROM\n",
+        "    player_games\n",
+        ")\n",
+        "SELECT\n",
+        "  player_id,\n",
+        "  rating,\n",
+        "  rating_change,\n",
+        "  speed,\n",
+        "  utc_date,\n",
+        "  utc_hour,\n",
+        "  game_in_session,\n",
+        "  session_length,\n",
+        "  is_loss,\n",
+        "  career_game_number,\n",
+        "  total_games_played,\n",
+        "  cumulative_rating_change,\n",
+        "  ROUND(rolling_5game_avg, 1) AS rolling_5game_avg,\n",
+        "  CASE\n",
+        "    WHEN utc_hour BETWEEN 0 AND 5 THEN 'Late Night (0-5)'\n",
+        "    WHEN utc_hour BETWEEN 6 AND 11 THEN 'Morning (6-11)'\n",
+        "    WHEN utc_hour BETWEEN 12 AND 17 THEN 'Afternoon (12-17)'\n",
+        "    ELSE 'Evening (18-23)'\n",
+        "  END AS time_of_day,\n",
+        "  CASE\n",
+        "    WHEN game_in_session = 1 THEN '1st game'\n",
+        "    WHEN game_in_session BETWEEN 2 AND 3 THEN '2nd-3rd game'\n",
+        "    WHEN game_in_session BETWEEN 4 AND 6 THEN '4th-6th game'\n",
+        "    WHEN game_in_session BETWEEN 7 AND 10 THEN '7th-10th game'\n",
+        "    ELSE '11+ games (marathon)'\n",
+        "  END AS session_depth,\n",
+        "  CASE\n",
+        "    WHEN game_in_session >= 7 THEN 'Fatigued'\n",
+        "    ELSE 'Fresh'\n",
+        "  END AS fatigue_state,\n",
+        "  CASE\n",
+        "    WHEN session_length <= 3 THEN 'Short (1-3 games)'\n",
+        "    WHEN session_length <= 7 THEN 'Medium (4-7 games)'\n",
+        "    ELSE 'Marathon (8+ games)'\n",
+        "  END AS session_type,\n",
+        "  status,\n",
+        "  eco\n",
+        "FROM\n",
+        "  with_sequence"
+      ]
+    },
+    {
+      "name": "improvement_areas",
+      "displayName": "Player Improvement Areas",
+      "queryLines": [
+        "WITH player_games AS (\n",
+        "  SELECT\n",
+        "    white_player AS player_id,\n",
+        "    white_elo AS rating,\n",
+        "    white_rating_diff AS rating_change,\n",
+        "    eco,\n",
+        "    SUBSTRING(eco, 1, 1) AS eco_family,\n",
+        "    status,\n",
+        "    result,\n",
+        "    speed,\n",
+        "    white_elo - black_elo AS elo_advantage,\n",
+        "    CASE\n",
+        "      WHEN result = '1-0' THEN 'win'\n",
+        "      WHEN result = '0-1' THEN 'loss'\n",
+        "      ELSE 'draw'\n",
+        "    END AS outcome\n",
+        "  FROM\n",
+        "    grandmasters.silver.historic_games\n",
+        "  WHERE\n",
+        "    rated = 'true'\n",
+        "  UNION ALL\n",
+        "  SELECT\n",
+        "    black_player AS player_id,\n",
+        "    black_elo AS rating,\n",
+        "    black_rating_diff AS rating_change,\n",
+        "    eco,\n",
+        "    SUBSTRING(eco, 1, 1) AS eco_family,\n",
+        "    status,\n",
+        "    result,\n",
+        "    speed,\n",
+        "    black_elo - white_elo AS elo_advantage,\n",
+        "    CASE\n",
+        "      WHEN result = '0-1' THEN 'win'\n",
+        "      WHEN result = '1-0' THEN 'loss'\n",
+        "      ELSE 'draw'\n",
+        "    END AS outcome\n",
+        "  FROM\n",
+        "    grandmasters.silver.historic_games\n",
+        "  WHERE\n",
+        "    rated = 'true'\n",
+        "),\n",
+        "player_stats AS (\n",
+        "  SELECT\n",
+        "    player_id,\n",
+        "    COUNT(*) AS total_games,\n",
+        "    -- Opening weakness: loss rate in unfamiliar openings (heavy losses in specific ECO families)\n",
+        "    AVG(\n",
+        "      CASE\n",
+        "        WHEN outcome = 'loss' THEN 1.0\n",
+        "        ELSE 0.0\n",
+        "      END\n",
+        "    )\n",
+        "      * 100 AS overall_loss_rate,\n",
+        "    -- Opening: variance in performance across ECO families (high variance = inconsistent preparation)\n",
+        "    AVG(\n",
+        "      CASE\n",
+        "        WHEN\n",
+        "          outcome = 'loss'\n",
+        "          AND ABS(rating_change) > 10\n",
+        "        THEN\n",
+        "          1.0\n",
+        "        ELSE 0.0\n",
+        "      END\n",
+        "    )\n",
+        "      * 100 AS heavy_loss_rate,\n",
+        "    -- Middlegame proxy: losses by resignation (outplayed tactically/positionally)\n",
+        "    AVG(\n",
+        "      CASE\n",
+        "        WHEN\n",
+        "          outcome = 'loss'\n",
+        "          AND status = 'resign'\n",
+        "        THEN\n",
+        "          1.0\n",
+        "        ELSE 0.0\n",
+        "      END\n",
+        "    )\n",
+        "      * 100 AS resign_loss_rate,\n",
+        "    -- Endgame proxy: losses by timeout (running out of time in longer positions)\n",
+        "    AVG(\n",
+        "      CASE\n",
+        "        WHEN\n",
+        "          outcome = 'loss'\n",
+        "          AND status = 'outoftime'\n",
+        "        THEN\n",
+        "          1.0\n",
+        "        ELSE 0.0\n",
+        "      END\n",
+        "    )\n",
+        "      * 100 AS timeout_loss_rate,\n",
+        "    -- Endgame conversion: draws when you had elo advantage > 50 (should have won)\n",
+        "    AVG(\n",
+        "      CASE\n",
+        "        WHEN\n",
+        "          outcome = 'draw'\n",
+        "          AND elo_advantage > 50\n",
+        "        THEN\n",
+        "          1.0\n",
+        "        ELSE 0.0\n",
+        "      END\n",
+        "    )\n",
+        "      * 100 AS failed_conversion_rate,\n",
+        "    -- Opening diversity (fewer unique openings = more predictable)\n",
+        "    COUNT(DISTINCT eco) AS opening_repertoire_size\n",
+        "  FROM\n",
+        "    player_games\n",
+        "  GROUP BY\n",
+        "    player_id\n",
+        "  HAVING\n",
+        "    COUNT(*) >= 3\n",
+        "),\n",
+        "scored AS (\n",
+        "  SELECT\n",
+        "    player_id,\n",
+        "    total_games,\n",
+        "    overall_loss_rate,\n",
+        "    -- Opening Score (0-100, higher = worse): heavy losses + small repertoire\n",
+        "    LEAST(\n",
+        "      100,\n",
+        "      heavy_loss_rate * 2\n",
+        "        + CASE\n",
+        "          WHEN opening_repertoire_size < 5 THEN 20\n",
+        "          ELSE 0\n",
+        "        END\n",
+        "    ) AS opening_weakness,\n",
+        "    -- Middlegame Score (0-100, higher = worse): resignation rate\n",
+        "    LEAST(100, resign_loss_rate * 2.5) AS middlegame_weakness,\n",
+        "    -- Endgame Score (0-100, higher = worse): timeout + failed conversion\n",
+        "    LEAST(100, timeout_loss_rate * 3 + failed_conversion_rate * 2) AS endgame_weakness\n",
+        "  FROM\n",
+        "    player_stats\n",
+        ")\n",
+        "SELECT\n",
+        "  player_id,\n",
+        "  total_games,\n",
+        "  ROUND(overall_loss_rate, 1) AS overall_loss_pct,\n",
+        "  ROUND(opening_weakness, 1) AS opening_weakness,\n",
+        "  ROUND(middlegame_weakness, 1) AS middlegame_weakness,\n",
+        "  ROUND(endgame_weakness, 1) AS endgame_weakness,\n",
+        "  CASE\n",
+        "    WHEN\n",
+        "      opening_weakness >= middlegame_weakness\n",
+        "      AND opening_weakness >= endgame_weakness\n",
+        "    THEN\n",
+        "      'Opening'\n",
+        "    WHEN\n",
+        "      middlegame_weakness >= opening_weakness\n",
+        "      AND middlegame_weakness >= endgame_weakness\n",
+        "    THEN\n",
+        "      'Middlegame'\n",
+        "    ELSE 'Endgame'\n",
+        "  END AS primary_weakness,\n",
+        "  CASE\n",
+        "    WHEN\n",
+        "      opening_weakness >= middlegame_weakness\n",
+        "      AND opening_weakness >= endgame_weakness\n",
+        "    THEN\n",
+        "      'Study more openings and expand repertoire'\n",
+        "    WHEN\n",
+        "      middlegame_weakness >= opening_weakness\n",
+        "      AND middlegame_weakness >= endgame_weakness\n",
+        "    THEN\n",
+        "      'Practice tactics and positional puzzles'\n",
+        "    ELSE 'Work on endgame technique and time management'\n",
+        "  END AS recommendation\n",
+        "FROM\n",
+        "  scored\n",
+        "ORDER BY\n",
+        "  total_games DESC"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "glossary",
+      "displayName": "Chess Glossary",
+      "layout": [
+        {
+          "widget": {
+            "name": "title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## 📚 Chess Glossary\n",
+                "\n",
+                "This page explains all chess-specific terminology used throughout this dashboard. No chess knowledge required!"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "ratings",
+            "multilineTextboxSpec": {
+              "lines": [
+                "### 🏆 Ratings & Elo System\n",
+                "\n",
+                "* **Elo Rating** — A numerical score (typically 400–3500) measuring a player's strength. Higher = better. Named after physicist Arpad Elo.\n",
+                "* **Rating Change** — Points gained (+) or lost (-) after each game. Beat a stronger player = big gain. Lose to a weaker player = big loss.\n",
+                "* **Peak Rating** — The highest Elo a player has ever reached.\n",
+                "* **Milestone** — The next round 100-point target (e.g., 1600 → 1700).\n",
+                "\n",
+                "**Rating Tiers (approximate):**\n",
+                "\n",
+                "| Rating | Level | Example |\n",
+                "| --- | --- | --- |\n",
+                "| <1200 | Beginner | Learning basics |\n",
+                "| 1200–1599 | Intermediate | Club player |\n",
+                "| 1600–1999 | Advanced | Strong club/tournament |\n",
+                "| 2000–2399 | Expert | National level |\n",
+                "| 2400+ | Master/GM | Professional/Elite |"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 6,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "openings",
+            "multilineTextboxSpec": {
+              "lines": [
+                "### ♟️ Openings & ECO Codes\n",
+                "\n",
+                "* **Opening** — The first 5–15 moves of a chess game, following studied patterns. Like a \"playbook\" in sports.\n",
+                "* **ECO Code** — Encyclopaedia of Chess Openings. A standard A00–E99 classification:\n",
+                "  * **A** — Flank openings (English, Réti)\n",
+                "  * **B** — Semi-open (Sicilian, Scandinavian)\n",
+                "  * **C** — Open games (Italian, French, Spanish)\n",
+                "  * **D** — Closed/Semi-closed (Queen's Gambit)\n",
+                "  * **E** — Indian defenses (King's Indian, Nimzo)\n",
+                "\n",
+                "**Common ECO examples in this dashboard:**\n",
+                "\n",
+                "| ECO | Opening Name | Style |\n",
+                "| --- | --- | --- |\n",
+                "| B01 | Scandinavian Defense | Aggressive |\n",
+                "| C20 | King's Pawn Game | Open/Tactical |\n",
+                "| D00 | Queen's Pawn Game | Solid/Positional |\n",
+                "| A00 | Uncommon Opening | Surprise weapon |\n",
+                "| C42 | Petrov's Defense | Defensive/Drawish |"
+              ]
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 2,
+            "width": 6,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "time_controls",
+            "multilineTextboxSpec": {
+              "lines": [
+                "### ⏱️ Time Controls (Speed)\n",
+                "\n",
+                "Each player has a clock. When your time runs out, you lose.\n",
+                "\n",
+                "| Speed | Time per Player | Character |\n",
+                "| --- | --- | --- |\n",
+                "| **UltraBullet** | <30 seconds | Pure reflexes, chaos |\n",
+                "| **Bullet** | 1–2 minutes | Lightning fast, intuition |\n",
+                "| **Blitz** | 3–5 minutes | Fast but some thought |\n",
+                "| **Rapid** | 10–15 minutes | Balanced speed + depth |\n",
+                "| **Classical** | 30+ minutes | Deep strategy, slow |\n",
+                "\n",
+                "* **Increment** — Bonus seconds added after each move (e.g., \"+3\" means 3 extra seconds per move)\n",
+                "* **Clock Pressure** — When remaining time is very low, players rush and blunder more\n",
+                "* **Flagging** — Winning by running your opponent's clock to zero"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 9,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "game_outcomes",
+            "multilineTextboxSpec": {
+              "lines": [
+                "### 💥 Game Outcomes & Blunders\n",
+                "\n",
+                "* **Win/Loss/Draw** — A game ends when one player checkmates, resigns, flags (time out), or both agree to a draw.\n",
+                "* **Blunder** — A serious mistake that turns a good position bad (like an own goal in football).\n",
+                "* **Upset** — When a lower-rated player beats a higher-rated one (the underdog wins).\n",
+                "* **Upset Rate** — What percentage of games are won by the weaker player.\n",
+                "\n",
+                "**Loss Severity (in this dashboard):**\n",
+                "* **Heavy Loss (>15 pts)** — Lost to a much weaker opponent, or blundered badly\n",
+                "* **Moderate Loss (8–15 pts)** — Tough loss, opponent was close in skill\n",
+                "* **Minor Loss (<8 pts)** — Expected loss against a slightly stronger player\n",
+                "\n",
+                "**Game End Types:**\n",
+                "* **Mate** — Checkmate (the king is trapped)\n",
+                "* **Resign** — Player gives up (position hopeless)\n",
+                "* **Timeout** — Clock ran out\n",
+                "* **Draw** — Neither player wins (stalemate, repetition, agreement)"
+              ]
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 9,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "dashboard_terms",
+            "multilineTextboxSpec": {
+              "lines": [
+                "### 📊 Dashboard-Specific Metrics\n",
+                "\n",
+                "* **Churn Risk** — Likelihood a player will stop playing. Based on gaps between games and declining activity.\n",
+                "* **Rolling 7-Game Rating Change** — Rating trend over the last 7 games. Positive = improving. Negative = on a losing streak.\n",
+                "* **Matchmaking Health** — How fair the pairings are. \"Excellent\" = opponents closely matched. \"Poor\" = big skill gaps.\n",
+                "* **Elo Gap** — Rating difference between opponents. Smaller = fairer match.\n",
+                "* **Player Tier** — Grouping in this dashboard:\n",
+                "  * **elite_gm** — Top-level Grandmasters (2700+)\n",
+                "  * **gm_im** — Grandmasters & International Masters\n",
+                "  * **rising** — Rapidly improving players\n",
+                "  * **club** — Recreational/club-level players\n",
+                "* **Active Days** — Days on which at least one game was played\n",
+                "* **Days Until Next Game** — How long before they play again (longer = losing interest?)"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 15,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "prediction_terms",
+            "multilineTextboxSpec": {
+              "lines": [
+                "### 🔮 Prediction & Analysis Terms\n",
+                "\n",
+                "* **Predicted Days to Milestone** — \"At your current pace, how many days until you reach the next 100-point rating level?\" Based on average daily rating gain.\n",
+                "* **Avg Gain Per Day** — How many Elo points a player gains on average each calendar day.\n",
+                "* **Outlook:**\n",
+                "  * **Very close!** — Less than 30 days to milestone\n",
+                "  * **On track** — 30–90 days\n",
+                "  * **Long road ahead** — More than 90 days\n",
+                "  * **Needs improvement** — Currently losing rating; won't reach milestone without changing approach\n",
+                "\n",
+                "**Think of it like a fitness tracker:**\n",
+                "> \"You walk 8,000 steps/day. At this rate, you'll hit your 10,000-step goal in 3 days.\" \n",
+                "\n",
+                "Same logic applied to chess ratings — extrapolating current performance trends into the future.\n",
+                "\n",
+                "* **Declining** — Player is losing more than gaining. Might need to study openings, practice tactics, or avoid playing while tired."
+              ]
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 15,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "fatigue_terms",
+            "multilineTextboxSpec": {
+              "lines": [
+                "### 🧠 Fatigue & Time Pressure Terms\n",
+                "\n",
+                "* **Session** — A streak of games played on the same day without a long break. Like a gym session but for chess.\n",
+                "* **Session Depth** — Which game number you're on (1st, 5th, 10th). Deeper = more tired.\n",
+                "* **Fatigue State** — \"Fresh\" (games 1–6) vs \"Fatigued\" (game 7+). Performance visibly drops after game 7.\n",
+                "* **Marathon Session** — Playing 8+ games in one sitting. Like running too many sprints — quality drops.\n",
+                "* **Tilt** — Emotional frustration after losing, causing worse decisions in the next game. Like \"rage queueing\" in video games.\n",
+                "* **Revenge Queueing** — Immediately playing another game after a loss to \"win it back\" — usually leads to more losses.\n",
+                "* **Flagging / Timeout** — Losing because your clock hit zero. More common when fatigued (slower thinking, more hesitation).\n",
+                "* **Time Pressure** — When you have very little time left on your clock and must move fast. Leads to blunders.\n",
+                "* **Peak Hours** — The time of day when a player performs best (usually morning, when rested and focused).\n",
+                "* **Late-Night Decay** — The pattern of worse performance during late-night hours (0–5 UTC) due to tiredness."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 21,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "session_analogy",
+            "multilineTextboxSpec": {
+              "lines": [
+                "### 🎯 Real-World Analogies\n",
+                "\n",
+                "Think of chess fatigue like:\n",
+                "\n",
+                "**🏋️ Gym Analogy:**\n",
+                "> Your first set of squats is strong. By set 10, your form breaks down and you risk injury. Same with chess — game 1 is sharp, game 10 is sloppy.\n",
+                "\n",
+                "**🚗 Driving Analogy:**\n",
+                "> Driving for 1 hour = alert. Driving for 5 hours = drowsy, slower reactions. Chess after 10+ games = \"drowsy driving\" for your brain.\n",
+                "\n",
+                "**🏈 Sports Analogy:**\n",
+                "> A quarterback in the 4th quarter makes more interceptions than in the 1st quarter. Fatigue degrades decision-making universally.\n",
+                "\n",
+                "**🎮 Gaming Analogy:**\n",
+                "> \"Tilting\" in chess = same as in League of Legends or Valorant. After a bad loss, emotions override strategy and you play worse.\n",
+                "\n",
+                "**Key Takeaway:**\n",
+                "> The data shows players lose significantly more rating when:\n",
+                "> 1. Playing 7+ games in a row\n",
+                "> 2. Playing after midnight\n",
+                "> 3. Playing ultraBullet while fatigued\n",
+                "> 4. Immediately re-queueing after a loss"
+              ]
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 21,
+            "width": 6,
+            "height": 6
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "global_filters",
+      "displayName": "Global Filters",
+      "pageType": "PAGE_TYPE_GLOBAL_FILTERS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "ad1776c2",
+      "displayName": "Live Overview",
+      "layout": [
+        {
+          "widget": {
+            "name": "live_games_counter",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "live_games",
+                  "fields": [
+                    {
+                      "name": "Live_Games",
+                      "expression": "`Live_Games`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Live Games",
+                "showTitle": true
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "Live_Games"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 3,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "active_players_counter",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "active_players",
+                  "fields": [
+                    {
+                      "name": "Active_Players",
+                      "expression": "`Active_Players`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Players",
+                "showTitle": true
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "Active_Players"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 0,
+            "width": 3,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "avg_rating_counter",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "avg_rating",
+                  "fields": [
+                    {
+                      "name": "Avg_Rating",
+                      "expression": "`Avg_Rating`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Avg Rating",
+                "showTitle": true
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "Avg_Rating",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "none",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 0
+                    }
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 0,
+            "width": 3,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "avg_think_time_counter",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "avg_think_time",
+                  "fields": [
+                    {
+                      "name": "Avg_Think_Time",
+                      "expression": "`Avg_Think_Time`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Avg Think",
+                "showTitle": true
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "Avg_Think_Time",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "none",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  },
+                  "formatTemplate": "{{ @formatted }}s"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 0,
+            "width": 3,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "avg_remaining_clock_counter",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "avg_remaining_clock",
+                  "fields": [
+                    {
+                      "name": "Avg_Remaining_Clock",
+                      "expression": "`Avg_Remaining_Clock`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Avg Clock",
+                "showTitle": true
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "Avg_Remaining_Clock",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "none",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 0
+                    }
+                  },
+                  "formatTemplate": "{{ @formatted }}s"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 3,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "avg_moves_counter",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "avg_moves",
+                  "fields": [
+                    {
+                      "name": "Avg_Moves",
+                      "expression": "`Avg_Moves`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Avg Moves",
+                "showTitle": true
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "Avg_Moves",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "none",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 0
+                    }
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 2,
+            "width": 3,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "avg_duration_counter",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "avg_game_duration",
+                  "fields": [
+                    {
+                      "name": "Avg_Duration",
+                      "expression": "`Avg_Duration`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Stream Duration",
+                "showTitle": true
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "Avg_Duration",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "none",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 0
+                    }
+                  },
+                  "formatTemplate": "{{ @formatted }}s"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 2,
+            "width": 3,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "avg_rating_diff_counter",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "avg_rating_diff",
+                  "fields": [
+                    {
+                      "name": "Avg_Rating_Diff",
+                      "expression": "`Avg_Rating_Diff`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Avg Elo Gap",
+                "showTitle": true
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "Avg_Rating_Diff",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "none",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 0
+                    }
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 2,
+            "width": 3,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "think_time_per_player_bar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "think_time_per_player",
+                  "fields": [
+                    {
+                      "name": "player",
+                      "expression": "`player`"
+                    },
+                    {
+                      "name": "avg(Avg_Think_Time)",
+                      "expression": "AVG(`Avg_Think_Time`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Think Time by Player",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "player",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "avg(Avg_Think_Time)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 4,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "rating_comparison_bar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "rating_comparison",
+                  "fields": [
+                    {
+                      "name": "side",
+                      "expression": "`side`"
+                    },
+                    {
+                      "name": "player",
+                      "expression": "`player`"
+                    },
+                    {
+                      "name": "avg(rating)",
+                      "expression": "AVG(`rating`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Rating Difference by Match",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "player",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "avg(rating)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "side",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 4,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "live_games_table",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "live_games_detail",
+                  "fields": [
+                    {
+                      "name": "game_id",
+                      "expression": "`game_id`"
+                    },
+                    {
+                      "name": "player_vs_player",
+                      "expression": "`player_vs_player`"
+                    },
+                    {
+                      "name": "white_rating",
+                      "expression": "`white_rating`"
+                    },
+                    {
+                      "name": "black_rating",
+                      "expression": "`black_rating`"
+                    },
+                    {
+                      "name": "total_moves",
+                      "expression": "`total_moves`"
+                    },
+                    {
+                      "name": "current_move_number",
+                      "expression": "`current_move_number`"
+                    },
+                    {
+                      "name": "avg_think_time_secs",
+                      "expression": "`avg_think_time_secs`"
+                    },
+                    {
+                      "name": "last_move",
+                      "expression": "`last_move`"
+                    },
+                    {
+                      "name": "rating_difference",
+                      "expression": "`rating_difference`"
+                    },
+                    {
+                      "name": "avg_remaining_clock_secs",
+                      "expression": "`avg_remaining_clock_secs`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Live Games Table",
+                "showTitle": true
+              },
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "game_id"
+                  },
+                  {
+                    "fieldName": "player_vs_player"
+                  },
+                  {
+                    "fieldName": "white_rating"
+                  },
+                  {
+                    "fieldName": "black_rating"
+                  },
+                  {
+                    "fieldName": "total_moves"
+                  },
+                  {
+                    "fieldName": "current_move_number"
+                  },
+                  {
+                    "fieldName": "avg_think_time_secs"
+                  },
+                  {
+                    "fieldName": "last_move"
+                  },
+                  {
+                    "fieldName": "rating_difference"
+                  },
+                  {
+                    "fieldName": "avg_remaining_clock_secs"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 9,
+            "width": 12,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "clock_pressure_bar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "clock_pressure",
+                  "fields": [
+                    {
+                      "name": "player",
+                      "expression": "`player`"
+                    },
+                    {
+                      "name": "avg(Avg_Remaining_Clock)",
+                      "expression": "AVG(`Avg_Remaining_Clock`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Clock Pressure by Player",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "player",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "avg(Avg_Remaining_Clock)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 21,
+            "width": 12,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "top_match_counter",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "top_live_match",
+                  "fields": [
+                    {
+                      "name": "white_player",
+                      "expression": "`white_player`"
+                    },
+                    {
+                      "name": "white_rating",
+                      "expression": "`white_rating`"
+                    },
+                    {
+                      "name": "black_player",
+                      "expression": "`black_player`"
+                    },
+                    {
+                      "name": "black_rating",
+                      "expression": "`black_rating`"
+                    },
+                    {
+                      "name": "rating_gap",
+                      "expression": "`rating_gap`"
+                    },
+                    {
+                      "name": "move_count",
+                      "expression": "`move_count`"
+                    },
+                    {
+                      "name": "avg_think_time",
+                      "expression": "`avg_think_time`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Top Live Match",
+                "showTitle": true
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "white_player",
+                  "formatTemplate": "⚔️ {{ white_player }} ({{ white_rating }}) vs {{ black_player }} ({{ black_rating }}) | Gap: {{ rating_gap }} | Move: {{ move_count }} | Think: {{ avg_think_time }}s",
+                  "style": {
+                    "fontSize": 18,
+                    "bold": true,
+                    "color": "#E63946"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 26,
+            "width": 12,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "game_progress_line",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "game_progress",
+                  "fields": [
+                    {
+                      "name": "player_vs_player",
+                      "expression": "`player_vs_player`"
+                    },
+                    {
+                      "name": "move_seq",
+                      "expression": "`move_seq`"
+                    },
+                    {
+                      "name": "avg(remaining_clock_secs)",
+                      "expression": "AVG(`remaining_clock_secs`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Game Progress (Remaining Clock)",
+                "showTitle": true
+              },
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "move_seq",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "avg(remaining_clock_secs)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "player_vs_player",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 16,
+            "width": 12,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "game_filter",
+            "queries": [
+              {
+                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f18022b63a10e7978058b73e626043_player_vs_player",
+                "query": {
+                  "datasetName": "game_progress",
+                  "fields": [
+                    {
+                      "name": "player_vs_player",
+                      "expression": "`player_vs_player`"
+                    },
+                    {
+                      "name": "player_vs_player_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Filter by Game",
+                "showTitle": true
+              },
+              "widgetType": "filter-single-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "player_vs_player",
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f18022b63a10e7978058b73e626043_player_vs_player"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 14,
+            "width": 4,
+            "height": 2
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "historic_mgmt",
+      "displayName": "Historic Analytics - Management Summary",
+      "layout": [
+        {
+          "widget": {
+            "name": "header",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## ♟️ Historic Analytics - Management Summary\n",
+                "Data-driven insights from 1,600+ historic games across elite GMs, rising players, and club-level competitors."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "retention_bar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "gold_player_retention",
+                  "fields": [
+                    {
+                      "name": "player_tier",
+                      "expression": "`player_tier`"
+                    },
+                    {
+                      "name": "churn_risk",
+                      "expression": "`churn_risk`"
+                    },
+                    {
+                      "name": "count(player_id)",
+                      "expression": "COUNT(`player_id`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "title": "Churn Risk Distribution",
+                "showTitle": true,
+                "showDescription": true,
+                "description": "How many players are at risk of leaving the platform, by tier. High churn risk = long gaps between games. Helps prioritize re-engagement campaigns."
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "churn_risk",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "count(player_id)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "player_tier",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 4,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "retention_line",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "gold_player_retention",
+                  "fields": [
+                    {
+                      "name": "player_tier",
+                      "expression": "`player_tier`"
+                    },
+                    {
+                      "name": "utc_date",
+                      "expression": "`utc_date`"
+                    },
+                    {
+                      "name": "avg(rolling_7game_rating_change)",
+                      "expression": "AVG(`rolling_7game_rating_change`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "title": "Rolling Rating Change",
+                "showTitle": true,
+                "showDescription": true,
+                "description": "7-game rolling average of Elo gain/loss over time by tier. Flat/negative lines signal stagnation needing coaching intervention."
+              },
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "utc_date",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "fieldName": "avg(rolling_7game_rating_change)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "player_tier",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 4,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "opening_bar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "gold_opening_trends",
+                  "fields": [
+                    {
+                      "name": "eco",
+                      "expression": "`eco`"
+                    },
+                    {
+                      "name": "sum(games_count)",
+                      "expression": "SUM(`games_count`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "title": "Top Openings",
+                "showTitle": true,
+                "showDescription": true,
+                "description": "Most played openings (ECO codes). Identifies the meta — useful for content creation and coaching focus areas."
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "eco",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(games_count)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 9,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "opening_table",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "gold_opening_trends",
+                  "fields": [
+                    {
+                      "name": "opening",
+                      "expression": "`opening`"
+                    },
+                    {
+                      "name": "eco",
+                      "expression": "`eco`"
+                    },
+                    {
+                      "name": "growth_rate_pct",
+                      "expression": "`growth_rate_pct`"
+                    },
+                    {
+                      "name": "trend",
+                      "expression": "`trend`"
+                    }
+                  ],
+                  "filters": [
+                    {
+                      "expression": "`trend` IN ('rising', 'declining')"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "title": "Trending Openings",
+                "showTitle": true,
+                "showDescription": true,
+                "description": "Openings gaining or losing popularity. Rising = new strategies adopted; Declining = falling out of favor."
+              },
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "opening"
+                  },
+                  {
+                    "fieldName": "eco"
+                  },
+                  {
+                    "fieldName": "growth_rate_pct"
+                  },
+                  {
+                    "fieldName": "trend"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 9,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "matchmaking_bar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "gold_matchmaking_health",
+                  "fields": [
+                    {
+                      "name": "health_rating",
+                      "expression": "`health_rating`"
+                    },
+                    {
+                      "name": "speed",
+                      "expression": "`speed`"
+                    },
+                    {
+                      "name": "avg(avg_elo_gap)",
+                      "expression": "AVG(`avg_elo_gap`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "title": "Matchmaking Health",
+                "showTitle": true,
+                "showDescription": true,
+                "description": "Avg Elo gap between opponents by speed. Smaller gaps = fairer matches. Large gaps frustrate players and drive churn."
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "speed",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "avg(avg_elo_gap)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "health_rating",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 14,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "engagement_heatmap",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "gold_engagement_tz",
+                  "fields": [
+                    {
+                      "name": "sum(games_count)",
+                      "expression": "SUM(`games_count`)"
+                    },
+                    {
+                      "name": "utc_hour",
+                      "expression": "`utc_hour`"
+                    },
+                    {
+                      "name": "elo_tier",
+                      "expression": "`elo_tier`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "title": "Engagement Heatmap",
+                "showTitle": true,
+                "showDescription": true,
+                "description": "Game volume by hour (UTC) and skill tier. Reveals peak windows — guides server capacity planning and tournament scheduling."
+              },
+              "version": 3,
+              "widgetType": "heatmap",
+              "encodings": {
+                "x": {
+                  "fieldName": "utc_hour",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "elo_tier",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "color": {
+                  "fieldName": "sum(games_count)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 14,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "speed_bar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "gold_game_speed",
+                  "fields": [
+                    {
+                      "name": "time_bucket",
+                      "expression": "`time_bucket`"
+                    },
+                    {
+                      "name": "sum(daily_game_count)",
+                      "expression": "SUM(`daily_game_count`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "title": "Game Speed Volume",
+                "showTitle": true,
+                "showDescription": true,
+                "description": "Total games by time control. Shows platform demand — which formats drive engagement and where to invest in matchmaking."
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "time_bucket",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(daily_game_count)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 19,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "upset_bar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "gold_upset_rate",
+                  "fields": [
+                    {
+                      "name": "avg_elo_bracket",
+                      "expression": "`avg_elo_bracket`"
+                    },
+                    {
+                      "name": "elo_gap_bucket",
+                      "expression": "`elo_gap_bucket`"
+                    },
+                    {
+                      "name": "avg(upset_rate_pct)",
+                      "expression": "AVG(`upset_rate_pct`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "title": "Upset Rate",
+                "showTitle": true,
+                "showDescription": true,
+                "description": "How often the lower-rated player wins, by Elo gap. Higher upset rates at small gaps = healthy competition."
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "elo_gap_bucket",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "avg(upset_rate_pct)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "avg_elo_bracket",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 19,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "filter_player_tier",
+            "queries": [
+              {
+                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f1804412581926aa263794b55b41f6_player_tier",
+                "query": {
+                  "datasetName": "gold_player_retention",
+                  "fields": [
+                    {
+                      "name": "player_tier",
+                      "expression": "`player_tier`"
+                    },
+                    {
+                      "name": "player_tier_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Filter: Player Tier",
+                "showTitle": true
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "player_tier",
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f1804412581926aa263794b55b41f6_player_tier"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "filter_player",
+            "queries": [
+              {
+                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f1804412581926aa263794b55b41f6_player_id",
+                "query": {
+                  "datasetName": "gold_player_retention",
+                  "fields": [
+                    {
+                      "name": "player_id",
+                      "expression": "`player_id`"
+                    },
+                    {
+                      "name": "player_id_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Filter: Player",
+                "showTitle": true
+              },
+              "widgetType": "filter-single-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "player_id",
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f1804412581926aa263794b55b41f6_player_id"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 2,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "filter_speed",
+            "queries": [
+              {
+                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180443625155fab7d50456a033780_speed",
+                "query": {
+                  "datasetName": "gold_game_speed",
+                  "fields": [
+                    {
+                      "name": "speed",
+                      "expression": "`speed`"
+                    },
+                    {
+                      "name": "speed_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Filter: Speed",
+                "showTitle": true
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "speed",
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180443625155fab7d50456a033780_speed"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 2,
+            "width": 4,
+            "height": 2
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "player_dive",
+      "displayName": "Player Deep Dive",
+      "layout": [
+        {
+          "widget": {
+            "name": "header",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## 🎯 Player Deep Dive\n",
+                "Select a player to see individual performance, rating trajectory, activity patterns, and improvement areas."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "filter_player",
+            "queries": [
+              {
+                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180459d671a7fb5ea561165508f5d_player_id",
+                "query": {
+                  "datasetName": "player_detail",
+                  "fields": [
+                    {
+                      "name": "player_id",
+                      "expression": "`player_id`"
+                    },
+                    {
+                      "name": "player_id_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Select Player",
+                "showTitle": true
+              },
+              "widgetType": "filter-single-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "player_id",
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180459d671a7fb5ea561165508f5d_player_id"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "filter_tier",
+            "queries": [
+              {
+                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180459d671a7fb5ea561165508f5d_player_tier",
+                "query": {
+                  "datasetName": "player_detail",
+                  "fields": [
+                    {
+                      "name": "player_tier",
+                      "expression": "`player_tier`"
+                    },
+                    {
+                      "name": "player_tier_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Player Tier",
+                "showTitle": true
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "player_tier",
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180459d671a7fb5ea561165508f5d_player_tier"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 2,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "filter_risk",
+            "queries": [
+              {
+                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180459d671a7fb5ea561165508f5d_churn_risk",
+                "query": {
+                  "datasetName": "player_detail",
+                  "fields": [
+                    {
+                      "name": "churn_risk",
+                      "expression": "`churn_risk`"
+                    },
+                    {
+                      "name": "churn_risk_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Churn Risk",
+                "showTitle": true
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "churn_risk",
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180459d671a7fb5ea561165508f5d_churn_risk"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 2,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "rating_line",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "player_detail",
+                  "fields": [
+                    {
+                      "name": "player_id",
+                      "expression": "`player_id`"
+                    },
+                    {
+                      "name": "utc_date",
+                      "expression": "`utc_date`"
+                    },
+                    {
+                      "name": "avg(peak_rating)",
+                      "expression": "AVG(`peak_rating`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Rating Trajectory",
+                "showTitle": true,
+                "description": "Peak Elo rating over time for selected player(s). Use the player filter to compare trajectories."
+              },
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "utc_date",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "fieldName": "avg(peak_rating)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "player_id",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 4,
+            "width": 8,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "games_counter",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "player_detail",
+                  "fields": [
+                    {
+                      "name": "count(utc_date)",
+                      "expression": "COUNT(`utc_date`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Total Active Days",
+                "showTitle": true,
+                "description": "Distinct days with at least one game played."
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "count(utc_date)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 4,
+            "width": 4,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "games_played_counter",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "player_detail",
+                  "fields": [
+                    {
+                      "name": "sum(games_played)",
+                      "expression": "SUM(`games_played`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Total Games",
+                "showTitle": true,
+                "description": "Sum of all games played across all active days."
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "sum(games_played)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 7,
+            "width": 4,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "rolling_bar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "player_detail",
+                  "fields": [
+                    {
+                      "name": "player_id",
+                      "expression": "`player_id`"
+                    },
+                    {
+                      "name": "utc_date",
+                      "expression": "`utc_date`"
+                    },
+                    {
+                      "name": "avg(rolling_7game_rating_change)",
+                      "expression": "AVG(`rolling_7game_rating_change`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Rolling Rating Change",
+                "showTitle": true,
+                "description": "7-game rolling average of rating change. Positive = improving trend, negative = losing streak."
+              },
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "utc_date",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "fieldName": "avg(rolling_7game_rating_change)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "player_id",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 10,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "activity_bar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "player_detail",
+                  "fields": [
+                    {
+                      "name": "player_id",
+                      "expression": "`player_id`"
+                    },
+                    {
+                      "name": "avg(days_until_next_game)",
+                      "expression": "AVG(`days_until_next_game`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Activity Gaps",
+                "showTitle": true,
+                "description": "Average days between games per player. Longer gaps may signal burnout or loss of interest."
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "player_id",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "avg(days_until_next_game)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 10,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "detail_table",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "player_detail",
+                  "fields": [
+                    {
+                      "name": "player_id",
+                      "expression": "`player_id`"
+                    },
+                    {
+                      "name": "utc_date",
+                      "expression": "`utc_date`"
+                    },
+                    {
+                      "name": "player_tier",
+                      "expression": "`player_tier`"
+                    },
+                    {
+                      "name": "peak_rating",
+                      "expression": "`peak_rating`"
+                    },
+                    {
+                      "name": "daily_rating_change",
+                      "expression": "`daily_rating_change`"
+                    },
+                    {
+                      "name": "games_played",
+                      "expression": "`games_played`"
+                    },
+                    {
+                      "name": "rolling_7game_rating_change",
+                      "expression": "`rolling_7game_rating_change`"
+                    },
+                    {
+                      "name": "days_until_next_game",
+                      "expression": "`days_until_next_game`"
+                    },
+                    {
+                      "name": "churn_risk",
+                      "expression": "`churn_risk`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Player Game Log",
+                "showTitle": true,
+                "description": "Day-by-day breakdown: rating, games played, momentum, and churn risk for each active day."
+              },
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "player_id"
+                  },
+                  {
+                    "fieldName": "utc_date"
+                  },
+                  {
+                    "fieldName": "player_tier"
+                  },
+                  {
+                    "fieldName": "peak_rating"
+                  },
+                  {
+                    "fieldName": "daily_rating_change"
+                  },
+                  {
+                    "fieldName": "games_played"
+                  },
+                  {
+                    "fieldName": "rolling_7game_rating_change"
+                  },
+                  {
+                    "fieldName": "days_until_next_game"
+                  },
+                  {
+                    "fieldName": "churn_risk"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 15,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "prediction_header",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## 🎯 Rating Milestone Prediction\n",
+                "If you're at 1600, when will you reach 1700? Based on your current daily gain rate, projected days to next 100-point milestone."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 21,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "prediction_bar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "rating_prediction",
+                  "fields": [
+                    {
+                      "name": "player_id",
+                      "expression": "`player_id`"
+                    },
+                    {
+                      "name": "predicted_days_to_milestone",
+                      "expression": "`predicted_days_to_milestone`"
+                    }
+                  ],
+                  "filters": [
+                    {
+                      "expression": "`outlook` NOT IN ('Needs improvement')"
+                    },
+                    {
+                      "expression": "`points_needed` <= 100"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Days to Next Milestone",
+                "showTitle": true,
+                "description": "Projected days to reach the next 100-point rating milestone based on current daily gain. Lower = closer to breakthrough."
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "player_id",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "predicted_days_to_milestone",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 25,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "prediction_table",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "rating_prediction",
+                  "fields": [
+                    {
+                      "name": "player_id",
+                      "expression": "`player_id`"
+                    },
+                    {
+                      "name": "player_tier",
+                      "expression": "`player_tier`"
+                    },
+                    {
+                      "name": "current_rating",
+                      "expression": "`current_rating`"
+                    },
+                    {
+                      "name": "next_milestone",
+                      "expression": "`next_milestone`"
+                    },
+                    {
+                      "name": "points_needed",
+                      "expression": "`points_needed`"
+                    },
+                    {
+                      "name": "avg_gain_per_day",
+                      "expression": "`avg_gain_per_day`"
+                    },
+                    {
+                      "name": "predicted_days_to_milestone",
+                      "expression": "`predicted_days_to_milestone`"
+                    },
+                    {
+                      "name": "outlook",
+                      "expression": "`outlook`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Milestone Prediction Detail",
+                "showTitle": true,
+                "description": "Full prediction breakdown: current rating, target milestone, points needed, daily gain rate, and outlook."
+              },
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "player_id"
+                  },
+                  {
+                    "fieldName": "player_tier"
+                  },
+                  {
+                    "fieldName": "current_rating"
+                  },
+                  {
+                    "fieldName": "next_milestone"
+                  },
+                  {
+                    "fieldName": "points_needed"
+                  },
+                  {
+                    "fieldName": "avg_gain_per_day"
+                  },
+                  {
+                    "fieldName": "predicted_days_to_milestone"
+                  },
+                  {
+                    "fieldName": "outlook"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 25,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "status_bar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "rating_prediction",
+                  "fields": [
+                    {
+                      "name": "player_tier",
+                      "expression": "`player_tier`"
+                    },
+                    {
+                      "name": "outlook",
+                      "expression": "`outlook`"
+                    },
+                    {
+                      "name": "count(player_id)",
+                      "expression": "COUNT(`player_id`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Player Status Distribution",
+                "showTitle": true,
+                "description": "Count of players in each outlook category by tier. Shows overall health of the player population."
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "outlook",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "count(player_id)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "player_tier",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 31,
+            "width": 12,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "blunder_header",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## 💥 Blunder Analysis — Where Do Players Lose Rating?\n",
+                "\n",
+                "**How to read this section:**\n",
+                "\n",
+                "* **ECO Code** — A standard classification system for chess openings (e.g., B01 = Scandinavian Defense, C20 = King's Pawn Game, D00 = Queen's Pawn). Each code maps to a specific opening sequence. Openings with the worst avg rating loss are where a player struggles most.\n",
+                "* **Loss Severity** — How many rating points were lost in a single game: *Heavy (>15pts)* means a major upset/blunder, *Moderate (8–15pts)* is a tough loss, *Minor (<8pts)* is expected against similar-strength opponents.\n",
+                "* **Speed** — Time control format: *ultraBullet* (<30s), *Bullet* (1–2min), *Blitz* (3–5min), *Rapid* (10–15min), *Classical* (30min+). Faster = more time-pressure blunders.\n",
+                "* **Rating Change** — Points gained/lost per game. Negative = lost rating. The more negative, the worse the blunder relative to expected performance."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 36,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "blunder_opening",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "blunder_analysis",
+                  "fields": [
+                    {
+                      "name": "eco",
+                      "expression": "`eco`"
+                    },
+                    {
+                      "name": "avg(rating_change)",
+                      "expression": "AVG(`rating_change`)"
+                    }
+                  ],
+                  "filters": [
+                    {
+                      "expression": "`outcome` IN ('loss')"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Worst Openings (Most Losses)",
+                "showTitle": true,
+                "description": "ECO codes with the worst avg rating loss. Focus study on these openings to patch weaknesses."
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "eco",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "avg(rating_change)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 40,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "blunder_speed",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "blunder_analysis",
+                  "fields": [
+                    {
+                      "name": "loss_severity",
+                      "expression": "`loss_severity`"
+                    },
+                    {
+                      "name": "speed",
+                      "expression": "`speed`"
+                    },
+                    {
+                      "name": "count(player_id)",
+                      "expression": "COUNT(`player_id`)"
+                    }
+                  ],
+                  "filters": [
+                    {
+                      "expression": "`outcome` IN ('loss')"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "title": "Loss Severity by Speed",
+                "showTitle": true,
+                "description": "Number of losses by time control, colored by severity. Shows which formats produce the heaviest rating drops."
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "speed",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "count(player_id)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "loss_severity",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 40,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "blunder_hour",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "blunder_analysis",
+                  "fields": [
+                    {
+                      "name": "utc_hour",
+                      "expression": "`utc_hour`"
+                    },
+                    {
+                      "name": "avg(rating_change)",
+                      "expression": "AVG(`rating_change`)"
+                    }
+                  ],
+                  "filters": [
+                    {
+                      "expression": "`outcome` IN ('loss')"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "title": "Rating Loss by Hour",
+                "showTitle": true,
+                "description": "Average rating loss by hour of day (UTC). Identifies when fatigue or time-zone effects cause the worst blunders."
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "utc_hour",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "avg(rating_change)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 46,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "blunder_table",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "blunder_analysis",
+                  "fields": [
+                    {
+                      "name": "player_id",
+                      "expression": "`player_id`"
+                    },
+                    {
+                      "name": "avg(rating_change)",
+                      "expression": "AVG(`rating_change`)"
+                    }
+                  ],
+                  "filters": [
+                    {
+                      "expression": "`outcome` IN ('loss')"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "title": "Player Blunder Summary",
+                "showTitle": true,
+                "description": "Average rating lost per game (losses only) by player. Most negative = most costly blunders overall."
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "player_id",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "avg(rating_change)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 46,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "filter_opening",
+            "queries": [
+              {
+                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180470aa514749e1042646690b707_eco",
+                "query": {
+                  "datasetName": "blunder_analysis",
+                  "fields": [
+                    {
+                      "name": "eco",
+                      "expression": "`eco`"
+                    },
+                    {
+                      "name": "eco_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Filter: Opening (ECO)",
+                "showTitle": true
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "eco",
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180470aa514749e1042646690b707_eco"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 38,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "filter_severity",
+            "queries": [
+              {
+                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180470aa514749e1042646690b707_loss_severity",
+                "query": {
+                  "datasetName": "blunder_analysis",
+                  "fields": [
+                    {
+                      "name": "loss_severity",
+                      "expression": "`loss_severity`"
+                    },
+                    {
+                      "name": "loss_severity_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Filter: Loss Severity",
+                "showTitle": true
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "loss_severity",
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180470aa514749e1042646690b707_loss_severity"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 38,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "filter_blunder_player",
+            "queries": [
+              {
+                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180470aa514749e1042646690b707_player_id",
+                "query": {
+                  "datasetName": "blunder_analysis",
+                  "fields": [
+                    {
+                      "name": "player_id",
+                      "expression": "`player_id`"
+                    },
+                    {
+                      "name": "player_id_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Player",
+                "showTitle": true
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "player_id",
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180470aa514749e1042646690b707_player_id"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 38,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "improvement_header",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## 🎓 Predicted Improvement Areas\n",
+                "\n",
+                "Where should each player focus their study? Using game outcome signals as proxies:\n",
+                "* **Opening** — Heavy losses + narrow repertoire suggest under-preparation in opening theory\n",
+                "* **Middlegame** — High resignation rate indicates being outplayed tactically/positionally mid-game\n",
+                "* **Endgame** — Timeouts + failed conversions (draws when ahead) signal poor endgame technique or time management\n",
+                "\n",
+                "Scores are 0–100 (higher = bigger weakness). The **primary weakness** is the area needing the most attention."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 51,
+            "width": 12,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "filter_improvement_player",
+            "queries": [
+              {
+                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f1804cb1651d89aed55711142ff618_player_id",
+                "query": {
+                  "datasetName": "improvement_areas",
+                  "fields": [
+                    {
+                      "name": "player_id",
+                      "expression": "`player_id`"
+                    },
+                    {
+                      "name": "player_id_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Filter: Player (Improvement)",
+                "showTitle": true
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "player_id",
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f1804cb1651d89aed55711142ff618_player_id"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 54,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "filter_weakness",
+            "queries": [
+              {
+                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f1804cb1651d89aed55711142ff618_primary_weakness",
+                "query": {
+                  "datasetName": "improvement_areas",
+                  "fields": [
+                    {
+                      "name": "primary_weakness",
+                      "expression": "`primary_weakness`"
+                    },
+                    {
+                      "name": "primary_weakness_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Filter: Primary Weakness",
+                "showTitle": true
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "primary_weakness",
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f1804cb1651d89aed55711142ff618_primary_weakness"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 54,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "weakness_distribution",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "improvement_areas",
+                  "fields": [
+                    {
+                      "name": "primary_weakness",
+                      "expression": "`primary_weakness`"
+                    },
+                    {
+                      "name": "count(player_id)",
+                      "expression": "COUNT(`player_id`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Primary Weakness Distribution",
+                "showTitle": true,
+                "description": "How many players are weakest in each game phase. Most common weakness area across the player pool."
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "primary_weakness",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "count(player_id)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 56,
+            "width": 4,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "weakness_scores",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "improvement_areas",
+                  "fields": [
+                    {
+                      "name": "player_id",
+                      "expression": "`player_id`"
+                    },
+                    {
+                      "name": "total_games",
+                      "expression": "`total_games`"
+                    },
+                    {
+                      "name": "overall_loss_pct",
+                      "expression": "`overall_loss_pct`"
+                    },
+                    {
+                      "name": "opening_weakness",
+                      "expression": "`opening_weakness`"
+                    },
+                    {
+                      "name": "middlegame_weakness",
+                      "expression": "`middlegame_weakness`"
+                    },
+                    {
+                      "name": "endgame_weakness",
+                      "expression": "`endgame_weakness`"
+                    },
+                    {
+                      "name": "primary_weakness",
+                      "expression": "`primary_weakness`"
+                    },
+                    {
+                      "name": "recommendation",
+                      "expression": "`recommendation`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Weakness Scores by Player",
+                "showTitle": true,
+                "description": "Per-player weakness scores (0–100) for each game phase plus a tailored recommendation. Filter to a player to see their profile."
+              },
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "player_id"
+                  },
+                  {
+                    "fieldName": "total_games"
+                  },
+                  {
+                    "fieldName": "overall_loss_pct"
+                  },
+                  {
+                    "fieldName": "opening_weakness"
+                  },
+                  {
+                    "fieldName": "middlegame_weakness"
+                  },
+                  {
+                    "fieldName": "endgame_weakness"
+                  },
+                  {
+                    "fieldName": "primary_weakness"
+                  },
+                  {
+                    "fieldName": "recommendation"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 56,
+            "width": 8,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "opening_vs_middlegame",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "improvement_areas",
+                  "fields": [
+                    {
+                      "name": "opening_weakness",
+                      "expression": "`opening_weakness`"
+                    },
+                    {
+                      "name": "middlegame_weakness",
+                      "expression": "`middlegame_weakness`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Opening vs Middlegame Weakness",
+                "showTitle": true,
+                "description": "Each dot is a player. Top-right = weak in both areas. Clusters reveal common player profiles."
+              },
+              "widgetType": "scatter",
+              "encodings": {
+                "x": {
+                  "fieldName": "opening_weakness",
+                  "axis": {
+                    "title": "Opening Weakness Score"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "middlegame_weakness",
+                  "axis": {
+                    "title": "Middlegame Weakness Score"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 62,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "endgame_by_player",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "improvement_areas",
+                  "fields": [
+                    {
+                      "name": "player_id",
+                      "expression": "`player_id`"
+                    },
+                    {
+                      "name": "endgame_weakness",
+                      "expression": "`endgame_weakness`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Endgame Weakness by Player",
+                "showTitle": true,
+                "description": "Players sorted by endgame weakness score. High bars = frequent timeouts and missed conversion opportunities."
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "player_id",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "endgame_weakness",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 62,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "filter_prediction_player",
+            "queries": [
+              {
+                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180460f4c152a88907e44ccf95ea9_player_id",
+                "query": {
+                  "datasetName": "rating_prediction",
+                  "fields": [
+                    {
+                      "name": "player_id",
+                      "expression": "`player_id`"
+                    },
+                    {
+                      "name": "player_id_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Filter: Player (Prediction)",
+                "showTitle": true
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "player_id",
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180460f4c152a88907e44ccf95ea9_player_id"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 23,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "filter_prediction_outlook",
+            "queries": [
+              {
+                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180460f4c152a88907e44ccf95ea9_outlook",
+                "query": {
+                  "datasetName": "rating_prediction",
+                  "fields": [
+                    {
+                      "name": "outlook",
+                      "expression": "`outlook`"
+                    },
+                    {
+                      "name": "outlook_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Filter: Outlook",
+                "showTitle": true
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "outlook",
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180460f4c152a88907e44ccf95ea9_outlook"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 23,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "filter_prediction_tier",
+            "queries": [
+              {
+                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180460f4c152a88907e44ccf95ea9_player_tier",
+                "query": {
+                  "datasetName": "rating_prediction",
+                  "fields": [
+                    {
+                      "name": "player_tier",
+                      "expression": "`player_tier`"
+                    },
+                    {
+                      "name": "player_tier_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Filter: Tier (Prediction)",
+                "showTitle": true
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "player_tier",
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180460f4c152a88907e44ccf95ea9_player_tier"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 23,
+            "width": 4,
+            "height": 2
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "fatigue",
+      "displayName": "Fatigue & Time Pressure",
+      "layout": [
+        {
+          "widget": {
+            "name": "header",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## 🧠 Fatigue & Time Pressure Analysis\n",
+                "\n",
+                "Do players get worse the more games they play in a session? This page reveals:\n",
+                "* **Session Fatigue** — Performance degrades as game count increases (game 1 vs game 10)\n",
+                "* **Tilt Detection** — After losing, do players keep losing? (revenge queueing)\n",
+                "* **Late-Night Decay** — Rating loss patterns by time of day (tired = more blunders)\n",
+                "* **Marathon Sessions** — Players who grind 8+ games in one sitting lose more rating on average"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "filter_player",
+            "queries": [
+              {
+                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f1804895d1113297c3e5aac943f33d_player_id",
+                "query": {
+                  "datasetName": "fatigue_analysis",
+                  "fields": [
+                    {
+                      "name": "player_id",
+                      "expression": "`player_id`"
+                    },
+                    {
+                      "name": "player_id_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Player",
+                "showTitle": true
+              },
+              "widgetType": "filter-single-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "player_id",
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f1804895d1113297c3e5aac943f33d_player_id"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 3,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "filter_speed",
+            "queries": [
+              {
+                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f1804895d1113297c3e5aac943f33d_speed",
+                "query": {
+                  "datasetName": "fatigue_analysis",
+                  "fields": [
+                    {
+                      "name": "speed",
+                      "expression": "`speed`"
+                    },
+                    {
+                      "name": "speed_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Speed",
+                "showTitle": true
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "speed",
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f1804895d1113297c3e5aac943f33d_speed"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 3,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "filter_session_type",
+            "queries": [
+              {
+                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f1804895d1113297c3e5aac943f33d_session_type",
+                "query": {
+                  "datasetName": "fatigue_analysis",
+                  "fields": [
+                    {
+                      "name": "session_type",
+                      "expression": "`session_type`"
+                    },
+                    {
+                      "name": "session_type_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Session Type",
+                "showTitle": true
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "session_type",
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f1804895d1113297c3e5aac943f33d_session_type"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 3,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "fatigue_curve",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fatigue_analysis",
+                  "fields": [
+                    {
+                      "name": "game_in_session",
+                      "expression": "`game_in_session`"
+                    },
+                    {
+                      "name": "avg(rating_change)",
+                      "expression": "AVG(`rating_change`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Session Fatigue Curve",
+                "showTitle": true
+              },
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "game_in_session",
+                  "axis": {
+                    "title": "Game # in Session"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "avg(rating_change)",
+                  "axis": {
+                    "title": "Avg Rating Change (pts)"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 7,
+            "width": 8,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "fresh_vs_fatigued",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fatigue_analysis",
+                  "fields": [
+                    {
+                      "name": "fatigue_state",
+                      "expression": "`fatigue_state`"
+                    },
+                    {
+                      "name": "avg(rating_change)",
+                      "expression": "AVG(`rating_change`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Fresh vs Fatigued",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "fatigue_state",
+                  "axis": {
+                    "title": "Player State"
+                  },
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "avg(rating_change)",
+                  "axis": {
+                    "title": "Avg Rating Change (pts)"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 7,
+            "width": 4,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "session_depth_bar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fatigue_analysis",
+                  "fields": [
+                    {
+                      "name": "session_depth",
+                      "expression": "`session_depth`"
+                    },
+                    {
+                      "name": "avg(rating_change)",
+                      "expression": "AVG(`rating_change`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Performance by Session Depth",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "session_depth",
+                  "axis": {
+                    "title": "Session Depth"
+                  },
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "avg(rating_change)",
+                  "axis": {
+                    "title": "Avg Rating Change (pts)"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 15,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "loss_rate_depth",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fatigue_analysis",
+                  "fields": [
+                    {
+                      "name": "session_depth",
+                      "expression": "`session_depth`"
+                    },
+                    {
+                      "name": "avg(is_loss)",
+                      "expression": "AVG(`is_loss`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Loss Rate by Session Depth",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "session_depth",
+                  "axis": {
+                    "title": "Session Depth"
+                  },
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "avg(is_loss)",
+                  "axis": {
+                    "title": "Loss Rate (0 = never, 1 = always)"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 15,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "time_of_day_perf",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fatigue_analysis",
+                  "fields": [
+                    {
+                      "name": "time_of_day",
+                      "expression": "`time_of_day`"
+                    },
+                    {
+                      "name": "avg(rating_change)",
+                      "expression": "AVG(`rating_change`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Performance by Time of Day",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "time_of_day",
+                  "axis": {
+                    "title": "Time of Day (UTC)"
+                  },
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "avg(rating_change)",
+                  "axis": {
+                    "title": "Avg Rating Change (pts)"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 23,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "marathon_impact",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fatigue_analysis",
+                  "fields": [
+                    {
+                      "name": "session_type",
+                      "expression": "`session_type`"
+                    },
+                    {
+                      "name": "avg(rating_change)",
+                      "expression": "AVG(`rating_change`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Marathon Session Impact",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "session_type",
+                  "axis": {
+                    "title": "Session Type"
+                  },
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "avg(rating_change)",
+                  "axis": {
+                    "title": "Avg Rating Change (pts)"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 23,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "timeout_by_depth",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fatigue_analysis",
+                  "fields": [
+                    {
+                      "name": "session_depth",
+                      "expression": "`session_depth`"
+                    },
+                    {
+                      "name": "count(player_id)",
+                      "expression": "COUNT(`player_id`)"
+                    }
+                  ],
+                  "filters": [
+                    {
+                      "expression": "`status` IN ('outoftime')"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Timeouts by Session Depth",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "session_depth",
+                  "axis": {
+                    "title": "Session Depth"
+                  },
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "count(player_id)",
+                  "axis": {
+                    "title": "Number of Timeouts"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 30,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "speed_fatigue",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fatigue_analysis",
+                  "fields": [
+                    {
+                      "name": "fatigue_state",
+                      "expression": "`fatigue_state`"
+                    },
+                    {
+                      "name": "speed",
+                      "expression": "`speed`"
+                    },
+                    {
+                      "name": "avg(rating_change)",
+                      "expression": "AVG(`rating_change`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Fatigue Impact by Speed",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "speed",
+                  "axis": {
+                    "title": "Time Control"
+                  },
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "avg(rating_change)",
+                  "axis": {
+                    "title": "Avg Rating Change (pts)"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "fatigue_state",
+                  "legend": {
+                    "title": "Player State"
+                  },
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 30,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "explain_curve",
+            "multilineTextboxSpec": {
+              "lines": [
+                "### 📉 Does playing more games make you worse?\n",
+                "The **line chart** (left) shows your average rating gain/loss for each game you play in a single sitting. If the line drops below zero as game count increases, fatigue is hurting you. The **bar chart** (right) is the simple summary: \"Fresh\" players (games 1–6) vs \"Fatigued\" (game 7+). A lower bar for Fatigued = proof that grinding too long costs rating."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 5,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "explain_depth",
+            "multilineTextboxSpec": {
+              "lines": [
+                "### 🎯 How much worse do you get the deeper you go?\n",
+                "**Left chart**: Groups games into buckets (1st game, 2nd–3rd, 4th–6th, etc.) and shows average rating change for each bucket. Negative bars = you're losing rating at that depth. **Right chart**: Shows the % of games you LOSE at each depth. If the bar gets taller as depth increases, you're losing more games when tired. Think of it like: \"Am I still winning after my 8th game, or just bleeding points?\""
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 13,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "explain_time",
+            "multilineTextboxSpec": {
+              "lines": [
+                "### ⏰ When should you play — and when should you stop?\n",
+                "**Left chart**: Splits the day into Morning/Afternoon/Evening/Late Night and shows avg rating change. Positive bars = you perform well at that time. Negative = you lose rating. Helps identify your personal \"peak hours.\" **Right chart**: Compares Short sessions (1–3 games), Medium (4–7), and Marathon (8+). Shows whether longer sessions help or hurt overall. If Marathon is negative, the data says: \"stop after 7 games.\""
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 21,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "explain_timeout",
+            "multilineTextboxSpec": {
+              "lines": [
+                "### ⏱️ Time pressure: do tired players run out of time more?\n",
+                "**Left chart**: Counts games lost by timeout (clock hit zero) at each session depth. More timeouts in later games = fatigue slows your thinking, you hesitate, and the clock punishes you. **Right chart**: Compares Fresh vs Fatigued performance across each time control (bullet, blitz, rapid, etc.). Shows which speed is most punishing when tired — e.g., if ultraBullet's fatigued bar is much worse than its fresh bar, that format is the hardest to grind."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 28,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "explain_career",
+            "multilineTextboxSpec": {
+              "lines": [
+                "### 📈 Individual Player Career View (works for any player)\n",
+                "The charts below track performance across ALL of a player's games in sequence — not just per-day sessions. **Cumulative Rating Change** shows total net points gained/lost since their first game. **Rolling 5-Game Avg** shows recent momentum (positive = improving, negative = on a slide). Select a player in the filter above to see their personal trajectory."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 35,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "career_cumulative",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fatigue_analysis",
+                  "fields": [
+                    {
+                      "name": "career_game_number",
+                      "expression": "`career_game_number`"
+                    },
+                    {
+                      "name": "avg(cumulative_rating_change)",
+                      "expression": "AVG(`cumulative_rating_change`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Cumulative Rating Journey",
+                "showTitle": true
+              },
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "career_game_number",
+                  "axis": {
+                    "title": "Game # (Career)"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "avg(cumulative_rating_change)",
+                  "axis": {
+                    "title": "Total Points Gained/Lost"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 37,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "career_rolling",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "fatigue_analysis",
+                  "fields": [
+                    {
+                      "name": "career_game_number",
+                      "expression": "`career_game_number`"
+                    },
+                    {
+                      "name": "avg(rolling_5game_avg)",
+                      "expression": "AVG(`rolling_5game_avg`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Rolling 5-Game Performance",
+                "showTitle": true
+              },
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "career_game_number",
+                  "axis": {
+                    "title": "Game # (Career)"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "avg(rolling_5game_avg)",
+                  "axis": {
+                    "title": "Avg Points per Game (last 5)"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 37,
+            "width": 6,
+            "height": 6
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    },
+    "applyModeEnabled": false
+  }
+}
