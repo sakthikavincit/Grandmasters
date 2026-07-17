@@ -464,56 +464,6 @@
       ]
     },
     {
-      "name": "gold_opening_trends",
-      "displayName": "Gold - Opening Trends",
-      "queryLines": [
-        "SELECT\n",
-        "  *\n",
-        "FROM\n",
-        "  grandmasters.gold.opening_meta_trends"
-      ]
-    },
-    {
-      "name": "gold_game_speed",
-      "displayName": "Gold - Game Speed",
-      "queryLines": [
-        "SELECT\n",
-        "  *\n",
-        "FROM\n",
-        "  grandmasters.gold.game_speed_server_load"
-      ]
-    },
-    {
-      "name": "gold_upset_rate",
-      "displayName": "Gold - Upset Rate",
-      "queryLines": [
-        "SELECT\n",
-        "  *\n",
-        "FROM\n",
-        "  grandmasters.gold.upset_rate_benchmark"
-      ]
-    },
-    {
-      "name": "gold_matchmaking_health",
-      "displayName": "Gold - Matchmaking Health",
-      "queryLines": [
-        "SELECT\n",
-        "  *\n",
-        "FROM\n",
-        "  grandmasters.gold.matchmaking_health_index"
-      ]
-    },
-    {
-      "name": "gold_engagement_tz",
-      "displayName": "Gold - Engagement Timezones",
-      "queryLines": [
-        "SELECT\n",
-        "  *\n",
-        "FROM\n",
-        "  grandmasters.gold.engagement_target_timezones"
-      ]
-    },
-    {
       "name": "player_detail",
       "displayName": "Player Detail",
       "queryLines": [
@@ -594,78 +544,6 @@
         "  next_milestone - current_rating > 0\n",
         "ORDER BY\n",
         "  current_rating DESC"
-      ]
-    },
-    {
-      "name": "blunder_analysis",
-      "displayName": "Blunder & Loss Analysis",
-      "queryLines": [
-        "WITH player_games AS (\n",
-        "  -- White player losses\n",
-        "  SELECT\n",
-        "    white_player AS player_id,\n",
-        "    white_elo AS rating,\n",
-        "    white_rating_diff AS rating_change,\n",
-        "    opening,\n",
-        "    eco,\n",
-        "    speed,\n",
-        "    utc_hour,\n",
-        "    utc_date,\n",
-        "    'white' AS color,\n",
-        "    CASE\n",
-        "      WHEN result = 'black' THEN 'loss'\n",
-        "      WHEN result = 'white' THEN 'win'\n",
-        "      ELSE 'draw'\n",
-        "    END AS outcome\n",
-        "  FROM\n",
-        "    grandmasters.silver.historic_games\n",
-        "  WHERE\n",
-        "    white_player IS NOT NULL\n",
-        "    AND white_rating_diff IS NOT NULL\n",
-        "  UNION ALL\n",
-        "  -- Black player losses\n",
-        "  SELECT\n",
-        "    black_player AS player_id,\n",
-        "    black_elo AS rating,\n",
-        "    black_rating_diff AS rating_change,\n",
-        "    opening,\n",
-        "    eco,\n",
-        "    speed,\n",
-        "    utc_hour,\n",
-        "    utc_date,\n",
-        "    'black' AS color,\n",
-        "    CASE\n",
-        "      WHEN result = 'white' THEN 'loss'\n",
-        "      WHEN result = 'black' THEN 'win'\n",
-        "      ELSE 'draw'\n",
-        "    END AS outcome\n",
-        "  FROM\n",
-        "    grandmasters.silver.historic_games\n",
-        "  WHERE\n",
-        "    black_player IS NOT NULL\n",
-        "    AND black_rating_diff IS NOT NULL\n",
-        ")\n",
-        "SELECT\n",
-        "  player_id,\n",
-        "  rating,\n",
-        "  rating_change,\n",
-        "  opening,\n",
-        "  eco,\n",
-        "  speed,\n",
-        "  utc_hour,\n",
-        "  outcome,\n",
-        "  -- Categorize blunder severity\n",
-        "  CASE\n",
-        "    WHEN rating_change <= -15 THEN 'Heavy Loss (>15pts)'\n",
-        "    WHEN rating_change <= -8 THEN 'Moderate Loss (8-15pts)'\n",
-        "    WHEN rating_change < 0 THEN 'Minor Loss (<8pts)'\n",
-        "    ELSE 'Win/Draw'\n",
-        "  END AS loss_severity\n",
-        "FROM\n",
-        "  player_games\n",
-        "ORDER BY\n",
-        "  player_id,\n",
-        "  utc_date"
       ]
     },
     {
@@ -956,89 +834,133 @@
       ]
     },
     {
-      "name": "opening_winrate_by_tier",
-      "displayName": "Opening Win Rate by Rating Tier",
+      "name": "historic_player_games",
+      "displayName": "Historic Player Games",
       "queryLines": [
-        "WITH player_games AS (\n",
-        "  SELECT\n",
-        "    white_player AS player_id,\n",
-        "    white_elo AS rating,\n",
-        "    SUBSTRING(eco, 1, 1) AS eco_family,\n",
-        "    CASE\n",
-        "      WHEN result = 'white' THEN 1.0\n",
-        "      ELSE 0.0\n",
-        "    END AS is_win,\n",
-        "    CASE\n",
-        "      WHEN result = 'black' THEN 1.0\n",
-        "      ELSE 0.0\n",
-        "    END AS is_loss,\n",
-        "    CASE\n",
-        "      WHEN result NOT IN ('white', 'black') THEN 1.0\n",
-        "      ELSE 0.0\n",
-        "    END AS is_draw\n",
-        "  FROM\n",
-        "    grandmasters.silver.historic_games\n",
-        "  WHERE\n",
-        "    rated = 'true'\n",
-        "    AND white_elo IS NOT NULL\n",
-        "    AND eco IS NOT NULL\n",
-        "    AND eco != ''\n",
-        "  UNION ALL\n",
-        "  SELECT\n",
-        "    black_player AS player_id,\n",
-        "    black_elo AS rating,\n",
-        "    SUBSTRING(eco, 1, 1) AS eco_family,\n",
-        "    CASE\n",
-        "      WHEN result = 'black' THEN 1.0\n",
-        "      ELSE 0.0\n",
-        "    END AS is_win,\n",
-        "    CASE\n",
-        "      WHEN result = 'white' THEN 1.0\n",
-        "      ELSE 0.0\n",
-        "    END AS is_loss,\n",
-        "    CASE\n",
-        "      WHEN result NOT IN ('white', 'black') THEN 1.0\n",
-        "      ELSE 0.0\n",
-        "    END AS is_draw\n",
-        "  FROM\n",
-        "    grandmasters.silver.historic_games\n",
-        "  WHERE\n",
-        "    rated = 'true'\n",
-        "    AND black_elo IS NOT NULL\n",
-        "    AND eco IS NOT NULL\n",
-        "    AND eco != ''\n",
-        ")\n",
         "SELECT\n",
+        "  white_player AS player_id,\n",
+        "  player_tier,\n",
+        "  eco,\n",
+        "  opening,\n",
+        "  speed,\n",
+        "  white_elo AS elo,\n",
+        "  black_elo AS opponent_elo,\n",
+        "  CAST(black_elo AS INT) - CAST(white_elo AS INT) AS elo_gap,\n",
+        "  utc_hour,\n",
+        "  utc_date,\n",
         "  CASE\n",
-        "    WHEN eco_family = 'A' THEN 'A: Flank Openings'\n",
-        "    WHEN eco_family = 'B' THEN 'B: Semi-Open Games'\n",
-        "    WHEN eco_family = 'C' THEN 'C: Open Games'\n",
-        "    WHEN eco_family = 'D' THEN 'D: Closed Games'\n",
-        "    WHEN eco_family = 'E' THEN 'E: Indian Defenses'\n",
-        "  END AS opening_category,\n",
+        "    WHEN result = 'white' THEN 'win'\n",
+        "    WHEN result = 'black' THEN 'loss'\n",
+        "    ELSE 'draw'\n",
+        "  END AS outcome,\n",
         "  CASE\n",
-        "    WHEN rating < 1500 THEN 'Under 1500'\n",
-        "    WHEN rating < 2000 THEN '1500-1999'\n",
-        "    WHEN rating < 2500 THEN '2000-2499'\n",
+        "    WHEN result = 'white' THEN 1.0\n",
+        "    ELSE 0.0\n",
+        "  END AS is_win,\n",
+        "  CASE\n",
+        "    WHEN result = 'black' THEN 1.0\n",
+        "    ELSE 0.0\n",
+        "  END AS is_loss,\n",
+        "  white_rating_diff AS rating_change,\n",
+        "  CASE\n",
+        "    WHEN CAST(white_elo AS INT) < 1500 THEN 'Under 1500'\n",
+        "    WHEN CAST(white_elo AS INT) < 2000 THEN '1500-1999'\n",
+        "    WHEN CAST(white_elo AS INT) < 2500 THEN '2000-2499'\n",
         "    ELSE '2500+'\n",
         "  END AS rating_tier,\n",
-        "  COUNT(*) AS total_games,\n",
-        "  ROUND(AVG(is_win) * 100, 1) AS win_rate,\n",
-        "  ROUND(AVG(is_loss) * 100, 1) AS loss_rate,\n",
-        "  ROUND(AVG(is_draw) * 100, 1) AS draw_rate,\n",
-        "  ROUND((AVG(is_win) - AVG(is_loss)) * 100, 1) AS net_performance\n",
+        "  CASE\n",
+        "    WHEN SUBSTRING(eco, 1, 1) = 'A' THEN 'A: Flank Openings'\n",
+        "    WHEN SUBSTRING(eco, 1, 1) = 'B' THEN 'B: Semi-Open Games'\n",
+        "    WHEN SUBSTRING(eco, 1, 1) = 'C' THEN 'C: Open Games'\n",
+        "    WHEN SUBSTRING(eco, 1, 1) = 'D' THEN 'D: Closed Games'\n",
+        "    WHEN SUBSTRING(eco, 1, 1) = 'E' THEN 'E: Indian Defenses'\n",
+        "  END AS opening_category,\n",
+        "  CASE\n",
+        "    WHEN ABS(CAST(black_elo AS INT) - CAST(white_elo AS INT)) < 50 THEN '0-49'\n",
+        "    WHEN ABS(CAST(black_elo AS INT) - CAST(white_elo AS INT)) < 100 THEN '50-99'\n",
+        "    WHEN ABS(CAST(black_elo AS INT) - CAST(white_elo AS INT)) < 200 THEN '100-199'\n",
+        "    ELSE '200+'\n",
+        "  END AS elo_gap_bucket,\n",
+        "  CASE\n",
+        "    WHEN\n",
+        "      result = 'white'\n",
+        "      AND CAST(white_elo AS INT) < CAST(black_elo AS INT)\n",
+        "    THEN\n",
+        "      1.0\n",
+        "    ELSE 0.0\n",
+        "  END AS is_upset\n",
         "FROM\n",
-        "  player_games\n",
+        "  grandmasters.silver.historic_games\n",
         "WHERE\n",
-        "  eco_family IN ('A', 'B', 'C', 'D', 'E')\n",
-        "GROUP BY\n",
-        "  eco_family,\n",
-        "  rating_tier\n",
-        "HAVING\n",
-        "  COUNT(*) >= 5\n",
-        "ORDER BY\n",
-        "  eco_family,\n",
-        "  rating_tier"
+        "  rated = 'true'\n",
+        "UNION ALL\n",
+        "SELECT\n",
+        "  black_player AS player_id,\n",
+        "  player_tier,\n",
+        "  eco,\n",
+        "  opening,\n",
+        "  speed,\n",
+        "  black_elo AS elo,\n",
+        "  white_elo AS opponent_elo,\n",
+        "  CAST(white_elo AS INT) - CAST(black_elo AS INT) AS elo_gap,\n",
+        "  utc_hour,\n",
+        "  utc_date,\n",
+        "  CASE\n",
+        "    WHEN result = 'black' THEN 'win'\n",
+        "    WHEN result = 'white' THEN 'loss'\n",
+        "    ELSE 'draw'\n",
+        "  END AS outcome,\n",
+        "  CASE\n",
+        "    WHEN result = 'black' THEN 1.0\n",
+        "    ELSE 0.0\n",
+        "  END AS is_win,\n",
+        "  CASE\n",
+        "    WHEN result = 'white' THEN 1.0\n",
+        "    ELSE 0.0\n",
+        "  END AS is_loss,\n",
+        "  black_rating_diff AS rating_change,\n",
+        "  CASE\n",
+        "    WHEN CAST(black_elo AS INT) < 1500 THEN 'Under 1500'\n",
+        "    WHEN CAST(black_elo AS INT) < 2000 THEN '1500-1999'\n",
+        "    WHEN CAST(black_elo AS INT) < 2500 THEN '2000-2499'\n",
+        "    ELSE '2500+'\n",
+        "  END AS rating_tier,\n",
+        "  CASE\n",
+        "    WHEN SUBSTRING(eco, 1, 1) = 'A' THEN 'A: Flank Openings'\n",
+        "    WHEN SUBSTRING(eco, 1, 1) = 'B' THEN 'B: Semi-Open Games'\n",
+        "    WHEN SUBSTRING(eco, 1, 1) = 'C' THEN 'C: Open Games'\n",
+        "    WHEN SUBSTRING(eco, 1, 1) = 'D' THEN 'D: Closed Games'\n",
+        "    WHEN SUBSTRING(eco, 1, 1) = 'E' THEN 'E: Indian Defenses'\n",
+        "  END AS opening_category,\n",
+        "  CASE\n",
+        "    WHEN ABS(CAST(white_elo AS INT) - CAST(black_elo AS INT)) < 50 THEN '0-49'\n",
+        "    WHEN ABS(CAST(white_elo AS INT) - CAST(black_elo AS INT)) < 100 THEN '50-99'\n",
+        "    WHEN ABS(CAST(white_elo AS INT) - CAST(black_elo AS INT)) < 200 THEN '100-199'\n",
+        "    ELSE '200+'\n",
+        "  END AS elo_gap_bucket,\n",
+        "  CASE\n",
+        "    WHEN\n",
+        "      result = 'black'\n",
+        "      AND CAST(black_elo AS INT) < CAST(white_elo AS INT)\n",
+        "    THEN\n",
+        "      1.0\n",
+        "    ELSE 0.0\n",
+        "  END AS is_upset\n",
+        "FROM\n",
+        "  grandmasters.silver.historic_games\n",
+        "WHERE\n",
+        "  rated = 'true'"
+      ],
+      "columns": [
+        {
+          "displayName": "net_performance",
+          "description": "",
+          "expression": "`is_win` - `is_loss`"
+        },
+        {
+          "displayName": "loss_severity",
+          "expression": "CASE WHEN `rating_change` <= -15 THEN 'Heavy Loss (>15pts)' WHEN `rating_change` <= -8 THEN 'Moderate Loss (8-15pts)' WHEN `rating_change` < 0 THEN 'Minor Loss (<8pts)' ELSE 'Win/Draw' END"
+        }
       ]
     }
   ],
@@ -2342,72 +2264,12 @@
         },
         {
           "widget": {
-            "name": "opening_bar",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "gold_opening_trends",
-                  "fields": [
-                    {
-                      "name": "eco",
-                      "expression": "`eco`"
-                    },
-                    {
-                      "name": "sum(games_count)",
-                      "expression": "SUM(`games_count`)"
-                    }
-                  ],
-                  "disaggregated": false
-                }
-              }
-            ],
-            "spec": {
-              "frame": {
-                "title": "Top Openings",
-                "showTitle": true,
-                "showDescription": true,
-                "description": "Most played openings (ECO codes). Identifies the meta — useful for content creation and coaching focus areas."
-              },
-              "version": 3,
-              "widgetType": "bar",
-              "encodings": {
-                "x": {
-                  "fieldName": "eco",
-                  "scale": {
-                    "type": "categorical",
-                    "sort": {
-                      "by": "y"
-                    }
-                  }
-                },
-                "y": {
-                  "fieldName": "sum(games_count)",
-                  "scale": {
-                    "type": "quantitative"
-                  }
-                }
-              },
-              "data": {
-                "queryName": "main_query"
-              }
-            }
-          },
-          "position": {
-            "x": 0,
-            "y": 9,
-            "width": 6,
-            "height": 5
-          }
-        },
-        {
-          "widget": {
             "name": "opening_table",
             "queries": [
               {
                 "name": "main_query",
                 "query": {
-                  "datasetName": "gold_opening_trends",
+                  "datasetName": "historic_player_games",
                   "fields": [
                     {
                       "name": "opening",
@@ -2418,29 +2280,33 @@
                       "expression": "`eco`"
                     },
                     {
-                      "name": "growth_rate_pct",
-                      "expression": "`growth_rate_pct`"
+                      "name": "count(player_id)",
+                      "expression": "COUNT(`player_id`)"
                     },
                     {
-                      "name": "trend",
-                      "expression": "`trend`"
+                      "name": "avg(is_win)",
+                      "expression": "AVG(`is_win`)"
+                    },
+                    {
+                      "name": "avg(rating_change)",
+                      "expression": "AVG(`rating_change`)"
                     }
                   ],
                   "filters": [
                     {
-                      "expression": "`trend` IN ('rising', 'declining')"
+                      "expression": "`opening_category` NOT IN (NULL)"
                     }
                   ],
-                  "disaggregated": true
+                  "disaggregated": false
                 }
               }
             ],
             "spec": {
               "frame": {
-                "title": "Trending Openings",
+                "title": "Top Openings & Win Rate",
                 "showTitle": true,
                 "showDescription": true,
-                "description": "Openings gaining or losing popularity. Rising = new strategies adopted; Declining = falling out of favor."
+                "description": "Select a player above to see their most-played openings ranked by frequency, with win rate and avg rating change."
               },
               "version": 2,
               "widgetType": "table",
@@ -2453,10 +2319,13 @@
                     "fieldName": "eco"
                   },
                   {
-                    "fieldName": "growth_rate_pct"
+                    "fieldName": "count(player_id)"
                   },
                   {
-                    "fieldName": "trend"
+                    "fieldName": "avg(is_win)"
+                  },
+                  {
+                    "fieldName": "avg(rating_change)"
                   }
                 ]
               },
@@ -2466,9 +2335,9 @@
             }
           },
           "position": {
-            "x": 6,
+            "x": 0,
             "y": 9,
-            "width": 6,
+            "width": 12,
             "height": 5
           }
         },
@@ -2479,19 +2348,15 @@
               {
                 "name": "main_query",
                 "query": {
-                  "datasetName": "gold_matchmaking_health",
+                  "datasetName": "historic_player_games",
                   "fields": [
-                    {
-                      "name": "health_rating",
-                      "expression": "`health_rating`"
-                    },
                     {
                       "name": "speed",
                       "expression": "`speed`"
                     },
                     {
-                      "name": "avg(avg_elo_gap)",
-                      "expression": "AVG(`avg_elo_gap`)"
+                      "name": "avg(elo_gap)",
+                      "expression": "AVG(`elo_gap`)"
                     }
                   ],
                   "disaggregated": false
@@ -2503,7 +2368,7 @@
                 "title": "Matchmaking Health",
                 "showTitle": true,
                 "showDescription": true,
-                "description": "Avg Elo gap between opponents by speed. Smaller gaps = fairer matches. Large gaps frustrate players and drive churn."
+                "description": "Average Elo gap between player and opponent by speed. Positive = facing stronger opponents. Responds to player filter."
               },
               "version": 3,
               "widgetType": "bar",
@@ -2515,15 +2380,12 @@
                   }
                 },
                 "y": {
-                  "fieldName": "avg(avg_elo_gap)",
+                  "fieldName": "avg(elo_gap)",
+                  "axis": {
+                    "title": "Avg Elo Gap vs Opponent"
+                  },
                   "scale": {
                     "type": "quantitative"
-                  }
-                },
-                "color": {
-                  "fieldName": "health_rating",
-                  "scale": {
-                    "type": "categorical"
                   }
                 }
               },
@@ -2546,19 +2408,19 @@
               {
                 "name": "main_query",
                 "query": {
-                  "datasetName": "gold_engagement_tz",
+                  "datasetName": "historic_player_games",
                   "fields": [
                     {
-                      "name": "sum(games_count)",
-                      "expression": "SUM(`games_count`)"
+                      "name": "count(player_id)",
+                      "expression": "COUNT(`player_id`)"
                     },
                     {
                       "name": "utc_hour",
                       "expression": "`utc_hour`"
                     },
                     {
-                      "name": "elo_tier",
-                      "expression": "`elo_tier`"
+                      "name": "rating_tier",
+                      "expression": "`rating_tier`"
                     }
                   ],
                   "disaggregated": false
@@ -2570,7 +2432,7 @@
                 "title": "Engagement Heatmap",
                 "showTitle": true,
                 "showDescription": true,
-                "description": "Game volume by hour (UTC) and skill tier. Reveals peak windows — guides server capacity planning and tournament scheduling."
+                "description": "Game volume by hour (UTC) and rating tier. Filter by player to see their personal peak hours."
               },
               "version": 3,
               "widgetType": "heatmap",
@@ -2582,13 +2444,13 @@
                   }
                 },
                 "y": {
-                  "fieldName": "elo_tier",
+                  "fieldName": "rating_tier",
                   "scale": {
                     "type": "categorical"
                   }
                 },
                 "color": {
-                  "fieldName": "sum(games_count)",
+                  "fieldName": "count(player_id)",
                   "scale": {
                     "type": "quantitative"
                   }
@@ -2613,15 +2475,15 @@
               {
                 "name": "main_query",
                 "query": {
-                  "datasetName": "gold_game_speed",
+                  "datasetName": "historic_player_games",
                   "fields": [
                     {
-                      "name": "time_bucket",
-                      "expression": "`time_bucket`"
+                      "name": "speed",
+                      "expression": "`speed`"
                     },
                     {
-                      "name": "sum(daily_game_count)",
-                      "expression": "SUM(`daily_game_count`)"
+                      "name": "count(player_id)",
+                      "expression": "COUNT(`player_id`)"
                     }
                   ],
                   "disaggregated": false
@@ -2633,13 +2495,13 @@
                 "title": "Game Speed Volume",
                 "showTitle": true,
                 "showDescription": true,
-                "description": "Total games by time control. Shows platform demand — which formats drive engagement and where to invest in matchmaking."
+                "description": "Total games by time control. Filter by player to see their preferred formats."
               },
               "version": 3,
               "widgetType": "bar",
               "encodings": {
                 "x": {
-                  "fieldName": "time_bucket",
+                  "fieldName": "speed",
                   "scale": {
                     "type": "categorical",
                     "sort": {
@@ -2648,7 +2510,10 @@
                   }
                 },
                 "y": {
-                  "fieldName": "sum(daily_game_count)",
+                  "fieldName": "count(player_id)",
+                  "axis": {
+                    "title": "Games Played"
+                  },
                   "scale": {
                     "type": "quantitative"
                   }
@@ -2673,19 +2538,15 @@
               {
                 "name": "main_query",
                 "query": {
-                  "datasetName": "gold_upset_rate",
+                  "datasetName": "historic_player_games",
                   "fields": [
-                    {
-                      "name": "avg_elo_bracket",
-                      "expression": "`avg_elo_bracket`"
-                    },
                     {
                       "name": "elo_gap_bucket",
                       "expression": "`elo_gap_bucket`"
                     },
                     {
-                      "name": "avg(upset_rate_pct)",
-                      "expression": "AVG(`upset_rate_pct`)"
+                      "name": "avg(is_upset)",
+                      "expression": "AVG(`is_upset`)"
                     }
                   ],
                   "disaggregated": false
@@ -2697,7 +2558,7 @@
                 "title": "Upset Rate",
                 "showTitle": true,
                 "showDescription": true,
-                "description": "How often the lower-rated player wins, by Elo gap. Higher upset rates at small gaps = healthy competition."
+                "description": "How often the lower-rated player wins, by Elo gap bucket. Filter by player to see their upset frequency."
               },
               "version": 3,
               "widgetType": "bar",
@@ -2709,15 +2570,12 @@
                   }
                 },
                 "y": {
-                  "fieldName": "avg(upset_rate_pct)",
+                  "fieldName": "avg(is_upset)",
+                  "axis": {
+                    "title": "Upset Rate"
+                  },
                   "scale": {
                     "type": "quantitative"
-                  }
-                },
-                "color": {
-                  "fieldName": "avg_elo_bracket",
-                  "scale": {
-                    "type": "categorical"
                   }
                 }
               },
@@ -2737,6 +2595,23 @@
           "widget": {
             "name": "filter_player_tier",
             "queries": [
+              {
+                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f181db8d01102fbd2bc3efae17cc81_player_tier",
+                "query": {
+                  "datasetName": "historic_player_games",
+                  "fields": [
+                    {
+                      "name": "player_tier",
+                      "expression": "`player_tier`"
+                    },
+                    {
+                      "name": "player_tier_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
               {
                 "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f1804412581926aa263794b55b41f6_player_tier",
                 "query": {
@@ -2766,6 +2641,10 @@
                 "fields": [
                   {
                     "fieldName": "player_tier",
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f181db8d01102fbd2bc3efae17cc81_player_tier"
+                  },
+                  {
+                    "fieldName": "player_tier",
                     "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f1804412581926aa263794b55b41f6_player_tier"
                   }
                 ]
@@ -2783,6 +2662,23 @@
           "widget": {
             "name": "filter_player",
             "queries": [
+              {
+                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f181db8d01102fbd2bc3efae17cc81_player_id",
+                "query": {
+                  "datasetName": "historic_player_games",
+                  "fields": [
+                    {
+                      "name": "player_id",
+                      "expression": "`player_id`"
+                    },
+                    {
+                      "name": "player_id_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
               {
                 "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f1804412581926aa263794b55b41f6_player_id",
                 "query": {
@@ -2807,9 +2703,13 @@
                 "title": "Filter: Player",
                 "showTitle": true
               },
-              "widgetType": "filter-single-select",
+              "widgetType": "filter-multi-select",
               "encodings": {
                 "fields": [
+                  {
+                    "fieldName": "player_id",
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f181db8d01102fbd2bc3efae17cc81_player_id"
+                  },
                   {
                     "fieldName": "player_id",
                     "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f1804412581926aa263794b55b41f6_player_id"
@@ -2830,9 +2730,9 @@
             "name": "filter_speed",
             "queries": [
               {
-                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180443625155fab7d50456a033780_speed",
+                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f181db8d01102fbd2bc3efae17cc81_speed",
                 "query": {
-                  "datasetName": "gold_game_speed",
+                  "datasetName": "historic_player_games",
                   "fields": [
                     {
                       "name": "speed",
@@ -2858,7 +2758,7 @@
                 "fields": [
                   {
                     "fieldName": "speed",
-                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180443625155fab7d50456a033780_speed"
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f181db8d01102fbd2bc3efae17cc81_speed"
                   }
                 ]
               }
@@ -2895,7 +2795,7 @@
               {
                 "name": "main_query",
                 "query": {
-                  "datasetName": "opening_winrate_by_tier",
+                  "datasetName": "historic_player_games",
                   "fields": [
                     {
                       "name": "rating_tier",
@@ -2906,8 +2806,13 @@
                       "expression": "`opening_category`"
                     },
                     {
-                      "name": "avg(win_rate)",
-                      "expression": "AVG(`win_rate`)"
+                      "name": "avg(is_win)",
+                      "expression": "AVG(`is_win`)"
+                    }
+                  ],
+                  "filters": [
+                    {
+                      "expression": "`opening_category` NOT IN (NULL)"
                     }
                   ],
                   "disaggregated": false
@@ -2919,7 +2824,7 @@
                 "title": "Win Rate by Opening Family & Tier",
                 "showTitle": true,
                 "showDescription": true,
-                "description": "Average win % for each ECO opening family by rating bracket. Shows which opening styles suit each level."
+                "description": "Win rate for each ECO opening family by rating bracket. Filter by player to see their personal strengths."
               },
               "version": 3,
               "widgetType": "bar",
@@ -2931,9 +2836,9 @@
                   }
                 },
                 "y": {
-                  "fieldName": "avg(win_rate)",
+                  "fieldName": "avg(is_win)",
                   "axis": {
-                    "title": "Win Rate (%)"
+                    "title": "Win Rate"
                   },
                   "scale": {
                     "type": "quantitative"
@@ -2965,7 +2870,7 @@
               {
                 "name": "main_query",
                 "query": {
-                  "datasetName": "opening_winrate_by_tier",
+                  "datasetName": "historic_player_games",
                   "fields": [
                     {
                       "name": "rating_tier",
@@ -2980,6 +2885,11 @@
                       "expression": "AVG(`net_performance`)"
                     }
                   ],
+                  "filters": [
+                    {
+                      "expression": "`opening_category` NOT IN (NULL)"
+                    }
+                  ],
                   "disaggregated": false
                 }
               }
@@ -2989,7 +2899,7 @@
                 "title": "Net Performance by Opening & Tier",
                 "showTitle": true,
                 "showDescription": true,
-                "description": "Win% minus Loss% for each opening family. Positive = net winners; negative = net losers."
+                "description": "Win rate minus loss rate per opening family. Positive = net winners in that opening."
               },
               "version": 3,
               "widgetType": "bar",
@@ -3003,7 +2913,7 @@
                 "y": {
                   "fieldName": "avg(net_performance)",
                   "axis": {
-                    "title": "Net Performance (Win% - Loss%)"
+                    "title": "Net Performance (Win - Loss)"
                   },
                   "scale": {
                     "type": "quantitative"
@@ -3035,7 +2945,7 @@
               {
                 "name": "main_query",
                 "query": {
-                  "datasetName": "opening_winrate_by_tier",
+                  "datasetName": "historic_player_games",
                   "fields": [
                     {
                       "name": "opening_category",
@@ -3046,27 +2956,28 @@
                       "expression": "`rating_tier`"
                     },
                     {
-                      "name": "total_games",
-                      "expression": "`total_games`"
+                      "name": "count(player_id)",
+                      "expression": "COUNT(`player_id`)"
                     },
                     {
-                      "name": "win_rate",
-                      "expression": "`win_rate`"
+                      "name": "avg(is_win)",
+                      "expression": "AVG(`is_win`)"
                     },
                     {
-                      "name": "loss_rate",
-                      "expression": "`loss_rate`"
+                      "name": "avg(is_loss)",
+                      "expression": "AVG(`is_loss`)"
                     },
                     {
-                      "name": "draw_rate",
-                      "expression": "`draw_rate`"
-                    },
-                    {
-                      "name": "net_performance",
-                      "expression": "`net_performance`"
+                      "name": "avg(net_performance)",
+                      "expression": "AVG(`net_performance`)"
                     }
                   ],
-                  "disaggregated": true
+                  "filters": [
+                    {
+                      "expression": "`opening_category` NOT IN (NULL)"
+                    }
+                  ],
+                  "disaggregated": false
                 }
               }
             ],
@@ -3075,7 +2986,7 @@
                 "title": "Opening Win Rate Detail",
                 "showTitle": true,
                 "showDescription": true,
-                "description": "Full breakdown: games played, win %, loss %, draw %, and net performance for each opening family × rating tier."
+                "description": "Full breakdown by opening family × rating tier. All metrics respond to player/speed/tier filters."
               },
               "version": 2,
               "widgetType": "table",
@@ -3088,19 +2999,16 @@
                     "fieldName": "rating_tier"
                   },
                   {
-                    "fieldName": "total_games"
+                    "fieldName": "count(player_id)"
                   },
                   {
-                    "fieldName": "win_rate"
+                    "fieldName": "avg(is_win)"
                   },
                   {
-                    "fieldName": "loss_rate"
+                    "fieldName": "avg(is_loss)"
                   },
                   {
-                    "fieldName": "draw_rate"
-                  },
-                  {
-                    "fieldName": "net_performance"
+                    "fieldName": "avg(net_performance)"
                   }
                 ]
               },
@@ -3161,20 +3069,83 @@
                   ],
                   "disaggregated": false
                 }
+              },
+              {
+                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180460f4c152a88907e44ccf95ea9_player_id",
+                "query": {
+                  "datasetName": "rating_prediction",
+                  "fields": [
+                    {
+                      "name": "player_id",
+                      "expression": "`player_id`"
+                    },
+                    {
+                      "name": "player_id_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f181db8d01102fbd2bc3efae17cc81_player_id",
+                "query": {
+                  "datasetName": "historic_player_games",
+                  "fields": [
+                    {
+                      "name": "player_id",
+                      "expression": "`player_id`"
+                    },
+                    {
+                      "name": "player_id_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f1804cb1651d89aed55711142ff618_player_id",
+                "query": {
+                  "datasetName": "improvement_areas",
+                  "fields": [
+                    {
+                      "name": "player_id",
+                      "expression": "`player_id`"
+                    },
+                    {
+                      "name": "player_id_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
               }
             ],
             "spec": {
               "version": 2,
               "frame": {
-                "title": "Select Player",
+                "title": "Player",
                 "showTitle": true
               },
-              "widgetType": "filter-single-select",
+              "widgetType": "filter-multi-select",
               "encodings": {
                 "fields": [
                   {
                     "fieldName": "player_id",
                     "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180459d671a7fb5ea561165508f5d_player_id"
+                  },
+                  {
+                    "fieldName": "player_id",
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180460f4c152a88907e44ccf95ea9_player_id"
+                  },
+                  {
+                    "fieldName": "player_id",
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f181db8d01102fbd2bc3efae17cc81_player_id"
+                  },
+                  {
+                    "fieldName": "player_id",
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f1804cb1651d89aed55711142ff618_player_id"
                   }
                 ]
               }
@@ -3183,7 +3154,7 @@
           "position": {
             "x": 0,
             "y": 2,
-            "width": 4,
+            "width": 2,
             "height": 2
           }
         },
@@ -3207,47 +3178,35 @@
                   ],
                   "disaggregated": false
                 }
-              }
-            ],
-            "spec": {
-              "version": 2,
-              "frame": {
-                "title": "Player Tier",
-                "showTitle": true
               },
-              "widgetType": "filter-multi-select",
-              "encodings": {
-                "fields": [
-                  {
-                    "fieldName": "player_tier",
-                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180459d671a7fb5ea561165508f5d_player_tier"
-                  }
-                ]
-              }
-            }
-          },
-          "position": {
-            "x": 4,
-            "y": 2,
-            "width": 4,
-            "height": 2
-          }
-        },
-        {
-          "widget": {
-            "name": "filter_risk",
-            "queries": [
               {
-                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180459d671a7fb5ea561165508f5d_churn_risk",
+                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180460f4c152a88907e44ccf95ea9_player_tier",
                 "query": {
-                  "datasetName": "player_detail",
+                  "datasetName": "rating_prediction",
                   "fields": [
                     {
-                      "name": "churn_risk",
-                      "expression": "`churn_risk`"
+                      "name": "player_tier",
+                      "expression": "`player_tier`"
                     },
                     {
-                      "name": "churn_risk_associativity",
+                      "name": "player_tier_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f181db8d01102fbd2bc3efae17cc81_player_tier",
+                "query": {
+                  "datasetName": "historic_player_games",
+                  "fields": [
+                    {
+                      "name": "player_tier",
+                      "expression": "`player_tier`"
+                    },
+                    {
+                      "name": "player_tier_associativity",
                       "expression": "COUNT_IF(`associative_filter_predicate_group`)"
                     }
                   ],
@@ -3258,24 +3217,99 @@
             "spec": {
               "version": 2,
               "frame": {
-                "title": "Churn Risk",
+                "title": "Tier",
                 "showTitle": true
               },
               "widgetType": "filter-multi-select",
               "encodings": {
                 "fields": [
                   {
-                    "fieldName": "churn_risk",
-                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180459d671a7fb5ea561165508f5d_churn_risk"
+                    "fieldName": "player_tier",
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180459d671a7fb5ea561165508f5d_player_tier"
+                  },
+                  {
+                    "fieldName": "player_tier",
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180460f4c152a88907e44ccf95ea9_player_tier"
+                  },
+                  {
+                    "fieldName": "player_tier",
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f181db8d01102fbd2bc3efae17cc81_player_tier"
                   }
                 ]
               }
             }
           },
           "position": {
-            "x": 8,
+            "x": 2,
             "y": 2,
-            "width": 4,
+            "width": 2,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "filter_risk",
+            "queries": [
+              {
+                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f181db8d01102fbd2bc3efae17cc81_speed",
+                "query": {
+                  "datasetName": "historic_player_games",
+                  "fields": [
+                    {
+                      "name": "speed",
+                      "expression": "`speed`"
+                    },
+                    {
+                      "name": "speed_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f1804895d1113297c3e5aac943f33d_speed",
+                "query": {
+                  "datasetName": "fatigue_analysis",
+                  "fields": [
+                    {
+                      "name": "speed",
+                      "expression": "`speed`"
+                    },
+                    {
+                      "name": "speed_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Speed",
+                "showTitle": true
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "speed",
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f181db8d01102fbd2bc3efae17cc81_speed"
+                  },
+                  {
+                    "fieldName": "speed",
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f1804895d1113297c3e5aac943f33d_speed"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 2,
+            "width": 2,
             "height": 2
           }
         },
@@ -3928,7 +3962,7 @@
               {
                 "name": "main_query",
                 "query": {
-                  "datasetName": "blunder_analysis",
+                  "datasetName": "historic_player_games",
                   "fields": [
                     {
                       "name": "eco",
@@ -3949,12 +3983,13 @@
               }
             ],
             "spec": {
-              "version": 3,
               "frame": {
                 "title": "Worst Openings (Most Losses)",
                 "showTitle": true,
+                "showDescription": true,
                 "description": "ECO codes with the worst avg rating loss. Focus study on these openings to patch weaknesses."
               },
+              "version": 3,
               "widgetType": "bar",
               "encodings": {
                 "x": {
@@ -3992,7 +4027,7 @@
               {
                 "name": "main_query",
                 "query": {
-                  "datasetName": "blunder_analysis",
+                  "datasetName": "historic_player_games",
                   "fields": [
                     {
                       "name": "loss_severity",
@@ -4020,6 +4055,7 @@
               "frame": {
                 "title": "Loss Severity by Speed",
                 "showTitle": true,
+                "showDescription": true,
                 "description": "Number of losses by time control, colored by severity. Shows which formats produce the heaviest rating drops."
               },
               "version": 3,
@@ -4063,7 +4099,7 @@
               {
                 "name": "main_query",
                 "query": {
-                  "datasetName": "blunder_analysis",
+                  "datasetName": "historic_player_games",
                   "fields": [
                     {
                       "name": "utc_hour",
@@ -4087,6 +4123,7 @@
               "frame": {
                 "title": "Rating Loss by Hour",
                 "showTitle": true,
+                "showDescription": true,
                 "description": "Average rating loss by hour of day (UTC). Identifies when fatigue or time-zone effects cause the worst blunders."
               },
               "version": 3,
@@ -4124,11 +4161,11 @@
               {
                 "name": "main_query",
                 "query": {
-                  "datasetName": "blunder_analysis",
+                  "datasetName": "historic_player_games",
                   "fields": [
                     {
-                      "name": "countdistinct(player_id)",
-                      "expression": "COUNT(DISTINCT `player_id`)"
+                      "name": "player_id",
+                      "expression": "`player_id`"
                     },
                     {
                       "name": "avg(rating_change)",
@@ -4145,19 +4182,29 @@
               }
             ],
             "spec": {
-              "version": 2,
+              "version": 3,
               "frame": {
                 "title": "Player Blunder Summary",
                 "showTitle": true,
+                "showDescription": true,
                 "description": "Average rating lost per game (losses only) by player. Most negative = most costly blunders overall."
               },
-              "widgetType": "counter",
+              "widgetType": "bar",
               "encodings": {
-                "value": {
-                  "fieldName": "avg(rating_change)"
+                "x": {
+                  "fieldName": "player_id",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y"
+                    }
+                  }
                 },
-                "target": {
-                  "fieldName": "countdistinct(player_id)"
+                "y": {
+                  "fieldName": "avg(rating_change)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
                 }
               },
               "data": {
@@ -4177,9 +4224,9 @@
             "name": "filter_opening",
             "queries": [
               {
-                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180470aa514749e1042646690b707_eco",
+                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f181db8d01102fbd2bc3efae17cc81_eco",
                 "query": {
-                  "datasetName": "blunder_analysis",
+                  "datasetName": "historic_player_games",
                   "fields": [
                     {
                       "name": "eco",
@@ -4197,7 +4244,7 @@
             "spec": {
               "version": 2,
               "frame": {
-                "title": "Filter: Opening (ECO)",
+                "title": "ECO",
                 "showTitle": true
               },
               "widgetType": "filter-multi-select",
@@ -4205,16 +4252,16 @@
                 "fields": [
                   {
                     "fieldName": "eco",
-                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180470aa514749e1042646690b707_eco"
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f181db8d01102fbd2bc3efae17cc81_eco"
                   }
                 ]
               }
             }
           },
           "position": {
-            "x": 0,
-            "y": 38,
-            "width": 4,
+            "x": 6,
+            "y": 2,
+            "width": 2,
             "height": 2
           }
         },
@@ -4223,9 +4270,9 @@
             "name": "filter_severity",
             "queries": [
               {
-                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180470aa514749e1042646690b707_loss_severity",
+                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f181db8d01102fbd2bc3efae17cc81_loss_severity",
                 "query": {
-                  "datasetName": "blunder_analysis",
+                  "datasetName": "historic_player_games",
                   "fields": [
                     {
                       "name": "loss_severity",
@@ -4243,7 +4290,7 @@
             "spec": {
               "version": 2,
               "frame": {
-                "title": "Filter: Loss Severity",
+                "title": "Severity",
                 "showTitle": true
               },
               "widgetType": "filter-multi-select",
@@ -4251,53 +4298,7 @@
                 "fields": [
                   {
                     "fieldName": "loss_severity",
-                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180470aa514749e1042646690b707_loss_severity"
-                  }
-                ]
-              }
-            }
-          },
-          "position": {
-            "x": 4,
-            "y": 38,
-            "width": 4,
-            "height": 2
-          }
-        },
-        {
-          "widget": {
-            "name": "filter_blunder_player",
-            "queries": [
-              {
-                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180470aa514749e1042646690b707_player_id",
-                "query": {
-                  "datasetName": "blunder_analysis",
-                  "fields": [
-                    {
-                      "name": "player_id",
-                      "expression": "`player_id`"
-                    },
-                    {
-                      "name": "player_id_associativity",
-                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
-                    }
-                  ],
-                  "disaggregated": false
-                }
-              }
-            ],
-            "spec": {
-              "version": 2,
-              "frame": {
-                "title": "Player",
-                "showTitle": true
-              },
-              "widgetType": "filter-multi-select",
-              "encodings": {
-                "fields": [
-                  {
-                    "fieldName": "player_id",
-                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180470aa514749e1042646690b707_player_id"
+                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f181db8d01102fbd2bc3efae17cc81_loss_severity"
                   }
                 ]
               }
@@ -4305,8 +4306,8 @@
           },
           "position": {
             "x": 8,
-            "y": 38,
-            "width": 4,
+            "y": 2,
+            "width": 2,
             "height": 2
           }
         },
@@ -4331,98 +4332,6 @@
             "y": 51,
             "width": 12,
             "height": 3
-          }
-        },
-        {
-          "widget": {
-            "name": "filter_improvement_player",
-            "queries": [
-              {
-                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f1804cb1651d89aed55711142ff618_player_id",
-                "query": {
-                  "datasetName": "improvement_areas",
-                  "fields": [
-                    {
-                      "name": "player_id",
-                      "expression": "`player_id`"
-                    },
-                    {
-                      "name": "player_id_associativity",
-                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
-                    }
-                  ],
-                  "disaggregated": false
-                }
-              }
-            ],
-            "spec": {
-              "version": 2,
-              "frame": {
-                "title": "Filter: Player (Improvement)",
-                "showTitle": true
-              },
-              "widgetType": "filter-multi-select",
-              "encodings": {
-                "fields": [
-                  {
-                    "fieldName": "player_id",
-                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f1804cb1651d89aed55711142ff618_player_id"
-                  }
-                ]
-              }
-            }
-          },
-          "position": {
-            "x": 0,
-            "y": 54,
-            "width": 4,
-            "height": 2
-          }
-        },
-        {
-          "widget": {
-            "name": "filter_weakness",
-            "queries": [
-              {
-                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f1804cb1651d89aed55711142ff618_primary_weakness",
-                "query": {
-                  "datasetName": "improvement_areas",
-                  "fields": [
-                    {
-                      "name": "primary_weakness",
-                      "expression": "`primary_weakness`"
-                    },
-                    {
-                      "name": "primary_weakness_associativity",
-                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
-                    }
-                  ],
-                  "disaggregated": false
-                }
-              }
-            ],
-            "spec": {
-              "version": 2,
-              "frame": {
-                "title": "Filter: Primary Weakness",
-                "showTitle": true
-              },
-              "widgetType": "filter-multi-select",
-              "encodings": {
-                "fields": [
-                  {
-                    "fieldName": "primary_weakness",
-                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f1804cb1651d89aed55711142ff618_primary_weakness"
-                  }
-                ]
-              }
-            }
-          },
-          "position": {
-            "x": 4,
-            "y": 54,
-            "width": 4,
-            "height": 2
           }
         },
         {
@@ -4698,52 +4607,6 @@
         },
         {
           "widget": {
-            "name": "filter_prediction_player",
-            "queries": [
-              {
-                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180460f4c152a88907e44ccf95ea9_player_id",
-                "query": {
-                  "datasetName": "rating_prediction",
-                  "fields": [
-                    {
-                      "name": "player_id",
-                      "expression": "`player_id`"
-                    },
-                    {
-                      "name": "player_id_associativity",
-                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
-                    }
-                  ],
-                  "disaggregated": false
-                }
-              }
-            ],
-            "spec": {
-              "version": 2,
-              "frame": {
-                "title": "Filter: Player (Prediction)",
-                "showTitle": true
-              },
-              "widgetType": "filter-multi-select",
-              "encodings": {
-                "fields": [
-                  {
-                    "fieldName": "player_id",
-                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180460f4c152a88907e44ccf95ea9_player_id"
-                  }
-                ]
-              }
-            }
-          },
-          "position": {
-            "x": 0,
-            "y": 23,
-            "width": 4,
-            "height": 2
-          }
-        },
-        {
-          "widget": {
             "name": "filter_prediction_outlook",
             "queries": [
               {
@@ -4767,7 +4630,7 @@
             "spec": {
               "version": 2,
               "frame": {
-                "title": "Filter: Outlook",
+                "title": "Outlook",
                 "showTitle": true
               },
               "widgetType": "filter-multi-select",
@@ -4782,55 +4645,9 @@
             }
           },
           "position": {
-            "x": 4,
-            "y": 23,
-            "width": 4,
-            "height": 2
-          }
-        },
-        {
-          "widget": {
-            "name": "filter_prediction_tier",
-            "queries": [
-              {
-                "name": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180460f4c152a88907e44ccf95ea9_player_tier",
-                "query": {
-                  "datasetName": "rating_prediction",
-                  "fields": [
-                    {
-                      "name": "player_tier",
-                      "expression": "`player_tier`"
-                    },
-                    {
-                      "name": "player_tier_associativity",
-                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
-                    }
-                  ],
-                  "disaggregated": false
-                }
-              }
-            ],
-            "spec": {
-              "version": 2,
-              "frame": {
-                "title": "Filter: Tier (Prediction)",
-                "showTitle": true
-              },
-              "widgetType": "filter-multi-select",
-              "encodings": {
-                "fields": [
-                  {
-                    "fieldName": "player_tier",
-                    "queryName": "dashboards/01f180167f801932bcad15cd6152b3a9/datasets/01f180460f4c152a88907e44ccf95ea9_player_tier"
-                  }
-                ]
-              }
-            }
-          },
-          "position": {
-            "x": 8,
-            "y": 23,
-            "width": 4,
+            "x": 10,
+            "y": 2,
+            "width": 2,
             "height": 2
           }
         }
