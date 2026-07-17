@@ -954,6 +954,92 @@
         "ORDER BY\n",
         "  total_games DESC"
       ]
+    },
+    {
+      "name": "opening_winrate_by_tier",
+      "displayName": "Opening Win Rate by Rating Tier",
+      "queryLines": [
+        "WITH player_games AS (\n",
+        "  SELECT\n",
+        "    white_player AS player_id,\n",
+        "    white_elo AS rating,\n",
+        "    SUBSTRING(eco, 1, 1) AS eco_family,\n",
+        "    CASE\n",
+        "      WHEN result = 'white' THEN 1.0\n",
+        "      ELSE 0.0\n",
+        "    END AS is_win,\n",
+        "    CASE\n",
+        "      WHEN result = 'black' THEN 1.0\n",
+        "      ELSE 0.0\n",
+        "    END AS is_loss,\n",
+        "    CASE\n",
+        "      WHEN result NOT IN ('white', 'black') THEN 1.0\n",
+        "      ELSE 0.0\n",
+        "    END AS is_draw\n",
+        "  FROM\n",
+        "    grandmasters.silver.historic_games\n",
+        "  WHERE\n",
+        "    rated = 'true'\n",
+        "    AND white_elo IS NOT NULL\n",
+        "    AND eco IS NOT NULL\n",
+        "    AND eco != ''\n",
+        "  UNION ALL\n",
+        "  SELECT\n",
+        "    black_player AS player_id,\n",
+        "    black_elo AS rating,\n",
+        "    SUBSTRING(eco, 1, 1) AS eco_family,\n",
+        "    CASE\n",
+        "      WHEN result = 'black' THEN 1.0\n",
+        "      ELSE 0.0\n",
+        "    END AS is_win,\n",
+        "    CASE\n",
+        "      WHEN result = 'white' THEN 1.0\n",
+        "      ELSE 0.0\n",
+        "    END AS is_loss,\n",
+        "    CASE\n",
+        "      WHEN result NOT IN ('white', 'black') THEN 1.0\n",
+        "      ELSE 0.0\n",
+        "    END AS is_draw\n",
+        "  FROM\n",
+        "    grandmasters.silver.historic_games\n",
+        "  WHERE\n",
+        "    rated = 'true'\n",
+        "    AND black_elo IS NOT NULL\n",
+        "    AND eco IS NOT NULL\n",
+        "    AND eco != ''\n",
+        ")\n",
+        "SELECT\n",
+        "  CASE\n",
+        "    WHEN eco_family = 'A' THEN 'A: Flank Openings'\n",
+        "    WHEN eco_family = 'B' THEN 'B: Semi-Open Games'\n",
+        "    WHEN eco_family = 'C' THEN 'C: Open Games'\n",
+        "    WHEN eco_family = 'D' THEN 'D: Closed Games'\n",
+        "    WHEN eco_family = 'E' THEN 'E: Indian Defenses'\n",
+        "  END AS opening_category,\n",
+        "  CASE\n",
+        "    WHEN rating < 1500 THEN 'Under 1500'\n",
+        "    WHEN rating < 2000 THEN '1500-1999'\n",
+        "    WHEN rating < 2500 THEN '2000-2499'\n",
+        "    ELSE '2500+'\n",
+        "  END AS rating_tier,\n",
+        "  COUNT(*) AS total_games,\n",
+        "  ROUND(AVG(is_win) * 100, 1) AS win_rate,\n",
+        "  ROUND(AVG(is_loss) * 100, 1) AS loss_rate,\n",
+        "  ROUND(AVG(is_draw) * 100, 1) AS draw_rate,\n",
+        "  ROUND((AVG(is_win) - AVG(is_loss)) * 100, 1) AS net_performance\n",
+        "FROM\n",
+        "  player_games\n",
+        "WHERE\n",
+        "  eco_family IN ('A', 'B', 'C', 'D', 'E')\n",
+        "GROUP BY\n",
+        "  eco_family,\n",
+        "  rating_tier\n",
+        "HAVING\n",
+        "  COUNT(*) >= 5\n",
+        "ORDER BY\n",
+        "  eco_family,\n",
+        "  rating_tier"
+      ]
     }
   ],
   "pages": [
@@ -2101,7 +2187,7 @@
     },
     {
       "name": "historic_mgmt",
-      "displayName": "Historic Analytics - Management Summary",
+      "displayName": "Historic Analytics",
       "layout": [
         {
           "widget": {
@@ -2783,6 +2869,251 @@
             "y": 2,
             "width": 4,
             "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "winrate_header",
+            "multilineTextboxSpec": {
+              "lines": [
+                "### 🎯 Opening Win Rate by Rating Tier\n",
+                "Which opening families perform best at each tier? Positive net performance = players win more than they lose in that opening category."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 24,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "winrate_bar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "opening_winrate_by_tier",
+                  "fields": [
+                    {
+                      "name": "rating_tier",
+                      "expression": "`rating_tier`"
+                    },
+                    {
+                      "name": "opening_category",
+                      "expression": "`opening_category`"
+                    },
+                    {
+                      "name": "avg(win_rate)",
+                      "expression": "AVG(`win_rate`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "title": "Win Rate by Opening Family & Tier",
+                "showTitle": true,
+                "showDescription": true,
+                "description": "Average win % for each ECO opening family by rating bracket. Shows which opening styles suit each level."
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "opening_category",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "avg(win_rate)",
+                  "axis": {
+                    "title": "Win Rate (%)"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "rating_tier",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 26,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "net_perf_bar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "opening_winrate_by_tier",
+                  "fields": [
+                    {
+                      "name": "rating_tier",
+                      "expression": "`rating_tier`"
+                    },
+                    {
+                      "name": "opening_category",
+                      "expression": "`opening_category`"
+                    },
+                    {
+                      "name": "avg(net_performance)",
+                      "expression": "AVG(`net_performance`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "title": "Net Performance by Opening & Tier",
+                "showTitle": true,
+                "showDescription": true,
+                "description": "Win% minus Loss% for each opening family. Positive = net winners; negative = net losers."
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "opening_category",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "avg(net_performance)",
+                  "axis": {
+                    "title": "Net Performance (Win% - Loss%)"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "rating_tier",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 26,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "winrate_table",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "opening_winrate_by_tier",
+                  "fields": [
+                    {
+                      "name": "opening_category",
+                      "expression": "`opening_category`"
+                    },
+                    {
+                      "name": "rating_tier",
+                      "expression": "`rating_tier`"
+                    },
+                    {
+                      "name": "total_games",
+                      "expression": "`total_games`"
+                    },
+                    {
+                      "name": "win_rate",
+                      "expression": "`win_rate`"
+                    },
+                    {
+                      "name": "loss_rate",
+                      "expression": "`loss_rate`"
+                    },
+                    {
+                      "name": "draw_rate",
+                      "expression": "`draw_rate`"
+                    },
+                    {
+                      "name": "net_performance",
+                      "expression": "`net_performance`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "title": "Opening Win Rate Detail",
+                "showTitle": true,
+                "showDescription": true,
+                "description": "Full breakdown: games played, win %, loss %, draw %, and net performance for each opening family × rating tier."
+              },
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "opening_category"
+                  },
+                  {
+                    "fieldName": "rating_tier"
+                  },
+                  {
+                    "fieldName": "total_games"
+                  },
+                  {
+                    "fieldName": "win_rate"
+                  },
+                  {
+                    "fieldName": "loss_rate"
+                  },
+                  {
+                    "fieldName": "draw_rate"
+                  },
+                  {
+                    "fieldName": "net_performance"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 32,
+            "width": 12,
+            "height": 5
           }
         }
       ],
@@ -3796,8 +4127,8 @@
                   "datasetName": "blunder_analysis",
                   "fields": [
                     {
-                      "name": "player_id",
-                      "expression": "`player_id`"
+                      "name": "countdistinct(player_id)",
+                      "expression": "COUNT(DISTINCT `player_id`)"
                     },
                     {
                       "name": "avg(rating_change)",
@@ -3814,28 +4145,19 @@
               }
             ],
             "spec": {
+              "version": 2,
               "frame": {
                 "title": "Player Blunder Summary",
                 "showTitle": true,
                 "description": "Average rating lost per game (losses only) by player. Most negative = most costly blunders overall."
               },
-              "version": 3,
-              "widgetType": "bar",
+              "widgetType": "counter",
               "encodings": {
-                "x": {
-                  "fieldName": "player_id",
-                  "scale": {
-                    "type": "categorical",
-                    "sort": {
-                      "by": "y"
-                    }
-                  }
+                "value": {
+                  "fieldName": "avg(rating_change)"
                 },
-                "y": {
-                  "fieldName": "avg(rating_change)",
-                  "scale": {
-                    "type": "quantitative"
-                  }
+                "target": {
+                  "fieldName": "countdistinct(player_id)"
                 }
               },
               "data": {
