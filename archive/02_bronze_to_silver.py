@@ -4,7 +4,7 @@
 # SILVER LAYER CONFIGURATION
 # ============================================================
 
-BRONZE_TABLE = "grandmasters.bronze.live_feed"
+BRONZE_TABLE = "grandmasters.bronze.tv_feed"
 
 SILVER_GAMES = "grandmasters.silver.game_events"
 SILVER_MOVES = "grandmasters.silver.game_move_events"
@@ -12,6 +12,20 @@ SILVER_PLAYER_METRICS = "grandmasters.silver.player_metrics"
 SILVER_PLAYER_MOVES = "grandmasters.silver.player_moves"
 
 DEVELOPMENT_MODE = True
+
+# COMMAND ----------
+
+spark.sql(f"DROP TABLE IF EXISTS {SILVER_GAMES}")
+spark.sql(f"DROP TABLE IF EXISTS {SILVER_MOVES}")
+spark.sql(f"DROP TABLE IF EXISTS {SILVER_PLAYER_METRICS}")
+spark.sql(f"DROP TABLE IF EXISTS {SILVER_PLAYER_MOVES}")
+
+# COMMAND ----------
+
+spark.sql(f"CREATE TABLE IF NOT EXISTS {SILVER_GAMES}")
+spark.sql(f"CREATE TABLE IF NOT EXISTS {SILVER_MOVES}")
+spark.sql(f"CREATE TABLE IF NOT EXISTS {SILVER_PLAYER_METRICS}")
+spark.sql(f"CREATE TABLE IF NOT EXISTS {SILVER_PLAYER_MOVES}")
 
 # COMMAND ----------
 
@@ -30,6 +44,10 @@ print("Total Bronze Records:", bronze_df.count())
 bronze_df.groupBy("event_type").count().show()
 
 bronze_df.select("game_id").distinct().show()
+
+# COMMAND ----------
+
+display(bronze_df.filter("event_type == 'fen'"))
 
 # COMMAND ----------
 

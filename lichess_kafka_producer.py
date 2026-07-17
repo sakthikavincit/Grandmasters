@@ -1,8 +1,4 @@
 # Databricks notebook source
-
-
-# COMMAND ----------
-
 # MAGIC %md
 # MAGIC # Chess Intelligence System — Kafka Producer
 # MAGIC
@@ -32,6 +28,10 @@
 # COMMAND ----------
 
 # MAGIC %pip install confluent-kafka
+
+# COMMAND ----------
+
+dbutils.library.restartPython()
 
 # COMMAND ----------
 
